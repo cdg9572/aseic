@@ -50,6 +50,12 @@ class ButtonManager {
      * ButtonManager를 완전히 건너뛸 버튼들
      */
     shouldSkipButton(button) {
+        // CKEditor는 툴바/다이얼로그 버튼 상태와 클릭 흐름을 자체 관리한다.
+        // 여기서 버튼을 비활성화하면 파일 선택 창을 포함한 에디터 UI가 동작하지 않는다.
+        if (button.closest('.ck')) {
+            return true;
+        }
+
         // 특정 ID의 버튼들
         const skipIds = ['sessionExtendBtn', 'sidebarToggle', 'navbar-toggler'];
         if (skipIds.includes(button.id)) {
