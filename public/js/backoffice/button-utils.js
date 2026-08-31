@@ -203,15 +203,23 @@ class ButtonManager {
     handleFormSubmit(event) {
         const form = event.target;
         const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
-        
-        submitButtons.forEach(button => {
-            this.setButtonProcessing(button, true);
-            
-            // 폼 제출 성공/실패 후 버튼 상태 복원
-            setTimeout(() => {
-                this.setButtonProcessing(button, false);
-            }, 3000); // 3초 후 자동 복원
-        });
+
+        // submit 이벤트가 끝나기 전에 submitter를 disabled 처리하면 브라우저의
+        // 기본 제출이나 다른 검증/에디터 핸들러와 경합할 수 있습니다.
+        // 모든 submit 핸들러가 완료된 다음 실제 제출이 취소되지 않았을 때만 처리 상태를 표시합니다.
+        setTimeout(() => {
+            if (event.defaultPrevented) {
+                submitButtons.forEach(button => this.setButtonProcessing(button, false));
+                return;
+            }
+
+            submitButtons.forEach(button => this.setButtonProcessing(button, true));
+        }, 0);
+
+        // 브라우저 검증이나 JavaScript 오류로 현재 화면에 남는 경우를 대비해 복원합니다.
+        setTimeout(() => {
+            submitButtons.forEach(button => this.setButtonProcessing(button, false));
+        }, 3000);
     }
 
     /**

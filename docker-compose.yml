@@ -24,6 +24,22 @@ services:
         depends_on:
             - mysql
             - redis
+    queue:
+        image: 'sail-8.4/app'
+        command: 'php artisan queue:work --sleep=3 --tries=3 --timeout=120'
+        restart: unless-stopped
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
     mysql:
         image: 'mysql/mysql-server:8.0'
         ports:

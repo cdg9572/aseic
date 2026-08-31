@@ -1,3 +1,24 @@
+function normalizeSidebarMenuPath(path) {
+    const normalizedPath = path.replace(/\/+$/, '');
+    return normalizedPath || '/';
+}
+
+function findBestSidebarMenuLink(links, currentPath) {
+    const normalizedCurrentPath = normalizeSidebarMenuPath(currentPath);
+
+    return Array.from(links).reduce(function(bestMatch, link) {
+        const linkPath = normalizeSidebarMenuPath(new URL(link.href).pathname);
+        const isMatch = normalizedCurrentPath === linkPath
+            || (linkPath !== '/backoffice' && normalizedCurrentPath.startsWith(linkPath + '/'));
+
+        if (!isMatch || (bestMatch && bestMatch.path.length >= linkPath.length)) {
+            return bestMatch;
+        }
+
+        return { link: link, path: linkPath };
+    }, null);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // 모든 메뉴의 active 클래스 초기화
     document.querySelectorAll('.sidebar-menu li').forEach(function(item) {
@@ -198,47 +219,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // 폼 제출 시 버튼 비활성화는 button-utils.js에서 통합 처리
 
     // URL에 따라 해당 메뉴 활성화
-    const currentPath = window.location.pathname;
+    const currentPath = normalizeSidebarMenuPath(window.location.pathname);
 
     // 2차 메뉴 먼저 확인 (더 구체적인 경로)
-    let isSubmenuActive = false;
     const submenuLinks = document.querySelectorAll('.sidebar-submenu li a');
+    const submenuMatch = findBestSidebarMenuLink(submenuLinks, currentPath);
+    const isSubmenuActive = submenuMatch !== null;
 
-    submenuLinks.forEach(function(link) {
-        const url = new URL(link.href);
-        const linkPath = url.pathname;
+    if (submenuMatch) {
+        const menuItem = submenuMatch.link.parentElement;
+        menuItem.classList.add('active');
 
-        // 현재 경로가 링크 경로와 정확히 일치하거나, 링크 경로로 시작하는 경우
-        if (currentPath === linkPath || (linkPath !== '/backoffice' && currentPath.startsWith(linkPath + '/'))) {
-            // 서브메뉴 아이템 활성화
-            const menuItem = link.parentElement;
-            menuItem.classList.add('active');
-
-            // 부모 메뉴 아이템 활성화
-            const parentLi = menuItem.closest('.sidebar-submenu').parentElement;
-            if (parentLi) {
-                parentLi.classList.add('active');
-                const parentLink = parentLi.querySelector('.has-submenu');
-                if (parentLink) parentLink.classList.add('open');
-                isSubmenuActive = true;
-            }
+        const parentLi = menuItem.closest('.sidebar-submenu')?.parentElement;
+        if (parentLi) {
+            parentLi.classList.add('active');
+            const parentLink = parentLi.querySelector('.has-submenu');
+            if (parentLink) parentLink.classList.add('open');
         }
-    });
+    }
 
     // 2차 메뉴가 활성화되지 않았다면 1차 메뉴 확인
     if (!isSubmenuActive) {
         const mainMenuLinks = document.querySelectorAll('.sidebar-menu > li > a:not(.has-submenu)');
+        const mainMenuMatch = findBestSidebarMenuLink(mainMenuLinks, currentPath);
 
-        mainMenuLinks.forEach(function(link) {
-            const url = new URL(link.href);
-            const linkPath = url.pathname;
-
-            // 현재 경로가 링크 경로와 정확히 일치하거나, 링크 경로로 시작하는 경우
-            if (currentPath === linkPath || (linkPath !== '/backoffice' && currentPath.startsWith(linkPath + '/'))) {
-                // 메뉴 아이템 활성화
-                link.parentElement.classList.add('active');
-            }
-        });
+        mainMenuMatch?.link.parentElement.classList.add('active');
     }
 
     // 모바일 디바이스 확인

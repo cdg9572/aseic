@@ -1,0 +1,5 @@
+@extends('backoffice.layouts.app')
+@section('title','Registration 신규 등록')
+@section('styles')<link rel="stylesheet" href="{{ asset('css/backoffice/backoffice-crud.css') }}">@endsection
+@section('content')<div class="board-container"><div class="board-header"><a href="{{ route('backoffice.registration.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> 목록으로</a></div><div class="board-card"><div class="board-card-body"><form action="{{ route('backoffice.registration.store') }}" method="POST" class="bo-compact-form">@csrf @include('backoffice.registration-pages._form')<div class="board-form-actions"><button class="btn btn-primary"><i class="fas fa-save"></i> 저장</button><a href="{{ route('backoffice.registration.index') }}" class="btn btn-secondary">취소</a></div></form></div></div></div>@endsection
+@section('scripts')<x-backoffice-ckeditor-assets /><script src="{{ asset('js/backoffice/registration.js') }}?v={{ filemtime(public_path('js/backoffice/registration.js')) }}"></script>@endsection

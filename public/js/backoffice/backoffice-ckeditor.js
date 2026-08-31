@@ -139,6 +139,12 @@
         });
     }
 
+    function handleFormSubmit(event) {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        syncFields(form);
+    }
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => initAll(document));
     } else {
@@ -147,4 +153,5 @@
 
     window.initBackofficeCKEditors = initAll;
     window.syncBackofficeCKEditorFields = syncFields;
+    document.addEventListener('submit', handleFormSubmit, true);
 })();

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Board;
 use App\Models\BoardTemplate;
+use Illuminate\Database\Seeder;
 
 class BoardSeeder extends Seeder
 {
@@ -19,14 +19,14 @@ class BoardSeeder extends Seeder
         // 템플릿 조회 (선택적으로 사용)
         $noticeTemplate = BoardTemplate::where('name', '공지사항')->first();
         $galleryTemplate = BoardTemplate::where('name', '갤러리')->first();
-        
+
         // 스킨 조회
         $defaultSkin = \App\Models\BoardSkin::where('name', '기본 스킨')->first();
         $gallerySkin = \App\Models\BoardSkin::where('name', '갤러리 스킨')->first();
 
         $boards = [
             [
-                'name' => '공지사항',
+                'name' => 'Announcements',
                 'slug' => 'notices',
                 'description' => '관리자가 작성하는 공지사항 게시판',
                 'skin_id' => $defaultSkin?->id,
@@ -52,7 +52,17 @@ class BoardSeeder extends Seeder
                     'is_secret' => ['enabled' => false, 'required' => false, 'label' => '비밀글'],
                     'created_at' => ['enabled' => true, 'required' => false, 'label' => '등록일'],
                 ],
-                'custom_fields_config' => null,
+                'custom_fields_config' => [
+                    [
+                        'name' => 'subtitle',
+                        'type' => 'editor',
+                        'label' => 'Sub Title',
+                        'options' => null,
+                        'required' => false,
+                        'max_length' => null,
+                        'placeholder' => null,
+                    ],
+                ],
             ],
             [
                 'name' => '갤러리',

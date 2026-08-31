@@ -1,0 +1,30 @@
+.bo-about-full-field,
+.bo-about-full-field .board-file-upload,
+.bo-about-full-field .board-file-input-wrapper {
+    width: 100%;
+    max-width: none;
+}
+
+.bo-about-inline-help { display: inline-block; margin-left: 8px; }
+.bo-about-selected-items { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.bo-about-selected-item { display: inline-flex; align-items: center; gap: 7px; padding: 6px 9px; border: 1px solid #dee2e6; border-radius: 4px; background: #f8f9fa; font-size: 13px; }
+.bo-about-selected-remove,
+.bo-about-modal-close { border: 0; padding: 0; background: transparent; color: #6c757d; cursor: pointer; }
+
+.bo-about-modal[hidden] { display: none; }
+.bo-about-modal { position: fixed; inset: 0; z-index: 1050; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.bo-about-modal-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); }
+.bo-about-modal-dialog { position: relative; display: flex; flex-direction: column; width: min(900px, 100%); max-height: calc(100vh - 40px); border-radius: 6px; background: #fff; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25); }
+.bo-about-modal-header,
+.bo-about-modal-actions { display: flex; align-items: center; padding: 14px 18px; border-bottom: 1px solid #e9ecef; }
+.bo-about-modal-header { justify-content: space-between; }
+.bo-about-modal-header h4 { margin: 0; font-size: 18px; }
+.bo-about-modal-body { overflow: auto; padding: 18px; }
+.bo-about-modal-actions { justify-content: flex-end; gap: 8px; border-top: 1px solid #e9ecef; border-bottom: 0; }
+.bo-about-picker-search { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+body.bo-about-modal-open { overflow: hidden; }
+
+.bo-about-repeat-toolbar { display: flex; align-items: center; gap: 12px; margin: 12px 0 8px; }
+.bo-about-repeat-toolbar .bo-form-label { padding: 0; }
+.bo-about-repeat-item { margin-bottom: 12px; padding: 8px 14px; border: 1px solid #e5e7eb; border-radius: 5px; }
+.bo-about-repeat-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 8px; border-bottom: 1px solid #f0f0f0; }

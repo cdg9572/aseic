@@ -16,10 +16,13 @@ class AuthController extends Controller
      */
     public function showLoginForm()
     {
-        // 로그인 페이지 진입 시 CSRF 토큰을 새로 발급해 만료 이슈를 완화
-        request()->session()->regenerateToken();
-
-        return view('backoffice.login');
+        // GET 요청마다 토큰을 재발급하면 이미 열린 로그인 폼의 토큰이 폐기됩니다.
+        // 토큰 재발급은 로그아웃 시점에만 수행하고 로그인 화면은 캐시하지 않습니다.
+        return response()
+            ->view('backoffice.login')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, private')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     /**
@@ -34,24 +37,24 @@ class AuthController extends Controller
 
         // login_id로 사용자 찾기
         $user = User::where('login_id', $credentials['login_id'])
-                                ->where('is_active', true)
-                                ->first();
+            ->where('is_active', true)
+            ->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors([
                 'login_id' => '존재하지 않는 로그인 ID입니다.',
             ])->withInput();
         }
 
         // 비밀번호 확인
-        if (!\Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
+        if (! \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
             return back()->withErrors([
                 'login_id' => '로그인 ID 또는 비밀번호가 일치하지 않습니다.',
             ])->withInput();
         }
 
         // 관리자 권한 확인
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             return back()->withErrors([
                 'login_id' => '백오피스 접근 권한이 없습니다.',
             ])->withInput();
@@ -59,10 +62,10 @@ class AuthController extends Controller
 
         // 로그인 성공
         \Illuminate\Support\Facades\Auth::login($user);
-        
+
         // 마지막 로그인 시간 업데이트
         $user->update(['last_login_at' => now()]);
-        
+
         // 접속 로그 기록
         UserAccessLog::create([
             'user_id' => $user->id,
@@ -72,15 +75,15 @@ class AuthController extends Controller
             'referer' => $request->header('referer'),
             'login_at' => now(),
         ]);
-        
+
         // 세션에 로그인 시간 저장 (세션 타이머용)
         $request->session()->put('login_time', now()->timestamp);
-        
+
         // localStorage 초기화를 위한 플래그 설정 (프론트엔드에서 감지)
         $request->session()->put('session_reset', true);
-        
+
         $request->session()->regenerate();
-        
+
         return redirect()->intended('/backoffice');
     }
 

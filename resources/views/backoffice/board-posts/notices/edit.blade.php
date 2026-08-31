@@ -34,6 +34,14 @@
                 @method('PUT')
                 <input type="hidden" name="return_url" value="{{ $returnUrl }}">
 
+                @php
+                    $noticeCustomFields = $post->custom_fields ? json_decode($post->custom_fields, true) : [];
+                @endphp
+                <div class="board-form-group">
+                    <label for="custom_field_subtitle" class="board-form-label">Sub Title</label>
+                    <textarea class="board-form-control board-form-textarea" id="custom_field_subtitle" name="custom_field_subtitle" rows="8" data-backoffice-ckeditor>{{ old('custom_field_subtitle', $noticeCustomFields['subtitle'] ?? '') }}</textarea>
+                </div>
+
                 @if($board->isNoticeEnabled())
                 <div class="board-form-group">
                     <div class="board-checkbox-item">
@@ -98,6 +106,7 @@
                 <!-- 커스텀 필드 입력 폼 -->
                 @if($board->custom_fields_config && count($board->custom_fields_config) > 0)
                     @foreach($board->custom_fields_config as $fieldConfig)
+                        @continue($fieldConfig['name'] === 'subtitle')
                         @php
                             $customFields = $post->custom_fields ? json_decode($post->custom_fields, true) : [];
                             $fieldValue = $customFields[$fieldConfig['name']] ?? '';

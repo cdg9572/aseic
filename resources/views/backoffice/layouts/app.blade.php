@@ -80,9 +80,9 @@
     <!-- SortableJS 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
-    <script src="{{ asset('js/backoffice/button-utils.js') }}"></script>
+    <script src="{{ asset('js/backoffice/button-utils.js') }}?v={{ filemtime(public_path('js/backoffice/button-utils.js')) }}"></script>
     <script src="{{ asset('js/backoffice/session-timer.js') }}"></script>
-    <script src="{{ asset('js/backoffice/backoffice.js') }}"></script>
+    <script src="{{ asset('js/backoffice/backoffice.js') }}?v={{ filemtime(public_path('js/backoffice/backoffice.js')) }}"></script>
     <script src="{{ asset('js/backoffice/return-url.js') }}"></script>
     <script src="{{ asset('js/common/app.js') }}"></script>
 

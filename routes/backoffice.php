@@ -1,23 +1,38 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Backoffice\AuthController;
-use App\Http\Controllers\Backoffice\AdminMenuController;
-use App\Http\Controllers\Backoffice\CategoryController;
-use App\Http\Controllers\Backoffice\SettingController;
-use App\Http\Controllers\Backoffice\BoardController;
-use App\Http\Controllers\Backoffice\BoardTemplateController;
-use App\Http\Controllers\Backoffice\BoardSkinController;
-use App\Http\Controllers\Backoffice\BoardPostController;
-use App\Http\Controllers\Backoffice\UserController;
-use App\Http\Controllers\Backoffice\LogController;
+use App\Http\Controllers\Backoffice\AboutCoOrganizerController;
+use App\Http\Controllers\Backoffice\AboutForumController;
+use App\Http\Controllers\Backoffice\AboutVenueController;
+use App\Http\Controllers\Backoffice\AccessStatisticsController;
+use App\Http\Controllers\Backoffice\AddressBookController;
 use App\Http\Controllers\Backoffice\AdminController;
 use App\Http\Controllers\Backoffice\AdminGroupController;
+use App\Http\Controllers\Backoffice\AdminMenuController;
+use App\Http\Controllers\Backoffice\AuthController;
 use App\Http\Controllers\Backoffice\BannerController;
-use App\Http\Controllers\Backoffice\PopupController;
-use App\Http\Controllers\Backoffice\AccessStatisticsController;
+use App\Http\Controllers\Backoffice\BoardController;
+use App\Http\Controllers\Backoffice\BoardPostController;
+use App\Http\Controllers\Backoffice\BoardSkinController;
+use App\Http\Controllers\Backoffice\BoardTemplateController;
+use App\Http\Controllers\Backoffice\CategoryController;
+use App\Http\Controllers\Backoffice\HomepagePartnerController;
+use App\Http\Controllers\Backoffice\LogController;
+use App\Http\Controllers\Backoffice\MailCampaignController;
+use App\Http\Controllers\Backoffice\MainPageController;
+use App\Http\Controllers\Backoffice\MediaContentController;
 use App\Http\Controllers\Backoffice\MemberController;
+use App\Http\Controllers\Backoffice\PopupController;
+use App\Http\Controllers\Backoffice\ProgrammePageController;
+use App\Http\Controllers\Backoffice\RegistrationApplicantController;
+use App\Http\Controllers\Backoffice\RegistrationPageController;
+use App\Http\Controllers\Backoffice\SettingController;
+use App\Http\Controllers\Backoffice\SpeakerController;
+use App\Http\Controllers\Backoffice\SteeringCommitteeController;
+use App\Http\Controllers\Backoffice\UserController;
+use App\Models\MediaContent;
+use App\Models\ProgrammePage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // =============================================================================
 // 백오피스 인증 라우트
@@ -35,14 +50,133 @@ Route::prefix('backoffice')->name('backoffice.')->group(function () {
 // =============================================================================
 
 Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
-    
+
     // 대시보드
     Route::get('/', [App\Http\Controllers\Backoffice\DashboardController::class, 'index'])
         ->name('backoffice.dashboard');
-    
+
     // 대시보드 API
     Route::get('/api/statistics', [App\Http\Controllers\Backoffice\DashboardController::class, 'statistics'])
         ->name('backoffice.api.statistics');
+
+    $registerProgrammeRoutes = static function (string $uri, string $routeName, string $type): void {
+        Route::get($uri, [ProgrammePageController::class, 'index'])->defaults('programme_type', $type)->name($routeName.'.index');
+        Route::get($uri.'/create', [ProgrammePageController::class, 'create'])->defaults('programme_type', $type)->name($routeName.'.create');
+        Route::post($uri, [ProgrammePageController::class, 'store'])->defaults('programme_type', $type)->name($routeName.'.store');
+        Route::get($uri.'/{programmePage}/edit', [ProgrammePageController::class, 'edit'])->defaults('programme_type', $type)->name($routeName.'.edit');
+        Route::put($uri.'/{programmePage}', [ProgrammePageController::class, 'update'])->defaults('programme_type', $type)->name($routeName.'.update');
+        Route::delete($uri.'/{programmePage}', [ProgrammePageController::class, 'destroy'])->defaults('programme_type', $type)->name($routeName.'.destroy');
+        Route::post($uri.'/delete-multiple', [ProgrammePageController::class, 'destroyMultiple'])->defaults('programme_type', $type)->name($routeName.'.delete-multiple');
+    };
+
+    // /programme의 동적 경로가 하위 메뉴를 가로채지 않도록 상세 메뉴를 먼저 등록합니다.
+    $registerProgrammeRoutes('programme/theme', 'backoffice.programme-theme', ProgrammePage::TYPE_THEME);
+    $registerProgrammeRoutes('programme/speakers', 'backoffice.programme-speakers', ProgrammePage::TYPE_SPEAKERS);
+    $registerProgrammeRoutes('programme/book', 'backoffice.programme-book', ProgrammePage::TYPE_BOOK);
+    $registerProgrammeRoutes('programme', 'backoffice.programme', ProgrammePage::TYPE_PROGRAMME);
+    $registerProgrammeRoutes('archives/2025-plus/theme', 'backoffice.archive-theme', ProgrammePage::TYPE_ARCHIVE_THEME);
+    $registerProgrammeRoutes('archives/2025-plus/programme', 'backoffice.archive-programme', ProgrammePage::TYPE_ARCHIVE_PROGRAMME);
+    $registerProgrammeRoutes('archives/2025-plus/speakers', 'backoffice.archive-speakers', ProgrammePage::TYPE_ARCHIVE_SPEAKERS);
+    $registerProgrammeRoutes('archives/2015-2024', 'backoffice.archive-legacy', ProgrammePage::TYPE_ARCHIVE_LEGACY);
+
+    $registerMediaRoutes = static function (string $uri, string $routeName, string $folderType, ?string $itemType = null): void {
+        Route::get($uri, [MediaContentController::class, 'index'])->defaults('media_type', $folderType)->name($routeName.'.index');
+        Route::get($uri.'/create', [MediaContentController::class, 'create'])->defaults('media_type', $folderType)->name($routeName.'.create');
+        Route::post($uri, [MediaContentController::class, 'store'])->defaults('media_type', $folderType)->name($routeName.'.store');
+        Route::get($uri.'/{mediaContent}/edit', [MediaContentController::class, 'edit'])->defaults('media_type', $folderType)->name($routeName.'.edit');
+        Route::put($uri.'/{mediaContent}', [MediaContentController::class, 'update'])->defaults('media_type', $folderType)->name($routeName.'.update');
+        Route::delete($uri.'/{mediaContent}', [MediaContentController::class, 'destroy'])->defaults('media_type', $folderType)->name($routeName.'.destroy');
+        Route::post($uri.'/delete-multiple', [MediaContentController::class, 'destroyMultiple'])->defaults('media_type', $folderType)->name($routeName.'.delete-multiple');
+
+        if ($itemType === null) {
+            return;
+        }
+
+        $itemRouteName = $routeName.'-items';
+        Route::get($uri.'/{mediaParent}/items', [MediaContentController::class, 'nestedIndex'])->defaults('media_type', $itemType)->defaults('media_parent_type', $folderType)->name($itemRouteName.'.index');
+        Route::get($uri.'/{mediaParent}/items/create', [MediaContentController::class, 'nestedCreate'])->defaults('media_type', $itemType)->defaults('media_parent_type', $folderType)->name($itemRouteName.'.create');
+        Route::post($uri.'/{mediaParent}/items', [MediaContentController::class, 'nestedStore'])->defaults('media_type', $itemType)->defaults('media_parent_type', $folderType)->name($itemRouteName.'.store');
+        Route::get($uri.'/{mediaParent}/items/{mediaContent}/edit', [MediaContentController::class, 'nestedEdit'])->defaults('media_type', $itemType)->defaults('media_parent_type', $folderType)->name($itemRouteName.'.edit');
+        Route::put($uri.'/{mediaParent}/items/{mediaContent}', [MediaContentController::class, 'nestedUpdate'])->defaults('media_type', $itemType)->defaults('media_parent_type', $folderType)->name($itemRouteName.'.update');
+        Route::delete($uri.'/{mediaParent}/items/{mediaContent}', [MediaContentController::class, 'nestedDestroy'])->defaults('media_type', $itemType)->defaults('media_parent_type', $folderType)->name($itemRouteName.'.destroy');
+        Route::post($uri.'/{mediaParent}/items/delete-multiple', [MediaContentController::class, 'nestedDestroyMultiple'])->defaults('media_type', $itemType)->defaults('media_parent_type', $folderType)->name($itemRouteName.'.delete-multiple');
+    };
+
+    $registerMediaRoutes('media/photo-gallery', 'backoffice.media-photo', MediaContent::TYPE_PHOTO_ITEM);
+    $registerMediaRoutes('media/news-clippings', 'backoffice.media-news', MediaContent::TYPE_NEWS_ITEM);
+    $registerMediaRoutes('media/youtube', 'backoffice.media-youtube', MediaContent::TYPE_YOUTUBE);
+
+    Route::post('registration/delete-multiple', [RegistrationPageController::class, 'destroyMultiple'])->name('backoffice.registration.delete-multiple');
+    Route::resource('registration', RegistrationPageController::class, ['names' => 'backoffice.registration', 'parameters' => ['registration' => 'registrationPage']])->except(['show']);
+
+    Route::post('registration/applicants/delete-multiple', [RegistrationApplicantController::class, 'destroyMultiple'])->name('backoffice.registration-applicants.delete-multiple');
+    Route::resource('registration/applicants', RegistrationApplicantController::class, ['names' => 'backoffice.registration-applicants', 'parameters' => ['applicants' => 'registrationApplicant']])->except(['show']);
+
+    Route::get('address-books/sample', [AddressBookController::class, 'sample'])->name('backoffice.address-books.sample');
+    Route::post('address-books/delete-multiple', [AddressBookController::class, 'destroyMultiple'])->name('backoffice.address-books.delete-multiple');
+    Route::post('address-books/{addressBook}/contacts', [AddressBookController::class, 'storeContact'])->name('backoffice.address-books.contacts.store');
+    Route::put('address-books/{addressBook}/contacts/{contact}', [AddressBookController::class, 'updateContact'])->scopeBindings()->name('backoffice.address-books.contacts.update');
+    Route::delete('address-books/{addressBook}/contacts/{contact}', [AddressBookController::class, 'destroyContact'])->scopeBindings()->name('backoffice.address-books.contacts.destroy');
+    Route::resource('address-books', AddressBookController::class, ['names' => 'backoffice.address-books', 'parameters' => ['address-books' => 'addressBook']])->except(['show']);
+
+    Route::post('mail-campaigns/delete-multiple', [MailCampaignController::class, 'destroyMultiple'])->name('backoffice.mail-campaigns.delete-multiple');
+    Route::post('mail-campaigns/{mailCampaign}/send', [MailCampaignController::class, 'send'])->name('backoffice.mail-campaigns.send');
+    Route::resource('mail-campaigns', MailCampaignController::class, ['names' => 'backoffice.mail-campaigns', 'parameters' => ['mail-campaigns' => 'mailCampaign']])->except(['show']);
+
+    Route::post('about-the-forum/delete-multiple', [AboutForumController::class, 'destroyMultiple'])
+        ->name('backoffice.about-the-forum.delete-multiple');
+    Route::resource('about-the-forum', AboutForumController::class, [
+        'names' => 'backoffice.about-the-forum',
+        'parameters' => ['about-the-forum' => 'aboutPage'],
+    ])->except(['show']);
+
+    Route::post('steering-committee/delete-multiple', [SteeringCommitteeController::class, 'destroyMultiple'])
+        ->name('backoffice.steering-committee.delete-multiple');
+    Route::resource('steering-committee', SteeringCommitteeController::class, [
+        'names' => 'backoffice.steering-committee',
+        'parameters' => ['steering-committee' => 'aboutPage'],
+    ])->except(['show']);
+
+    Route::post('co-organizers/delete-multiple', [AboutCoOrganizerController::class, 'destroyMultiple'])
+        ->name('backoffice.co-organizers.delete-multiple');
+    Route::resource('co-organizers', AboutCoOrganizerController::class, [
+        'names' => 'backoffice.co-organizers',
+        'parameters' => ['co-organizers' => 'aboutPage'],
+    ])->except(['show']);
+
+    Route::post('venue/delete-multiple', [AboutVenueController::class, 'destroyMultiple'])
+        ->name('backoffice.venue.delete-multiple');
+    Route::resource('venue', AboutVenueController::class, [
+        'names' => 'backoffice.venue',
+        'parameters' => ['venue' => 'aboutPage'],
+    ])->except(['show']);
+
+    Route::post('main-pages/delete-multiple', [MainPageController::class, 'destroyMultiple'])
+        ->name('backoffice.main-pages.delete-multiple');
+    Route::resource('main-pages', MainPageController::class, [
+        'names' => 'backoffice.main-pages',
+        'parameters' => ['main-pages' => 'mainPage'],
+    ])->except(['show']);
+
+    Route::post('speakers/delete-multiple', [SpeakerController::class, 'destroyMultiple'])
+        ->name('backoffice.speakers.delete-multiple');
+    Route::resource('speakers', SpeakerController::class, [
+        'names' => 'backoffice.speakers',
+    ])->except(['show']);
+
+    Route::post('organized/delete-multiple', [HomepagePartnerController::class, 'destroyMultiple'])
+        ->name('backoffice.organized.delete-multiple');
+    Route::resource('organized', HomepagePartnerController::class, [
+        'names' => 'backoffice.organized',
+        'parameters' => ['organized' => 'homepagePartner'],
+    ])->except(['show']);
+
+    Route::post('partnerships/delete-multiple', [HomepagePartnerController::class, 'destroyMultiple'])
+        ->name('backoffice.partnerships.delete-multiple');
+    Route::resource('partnerships', HomepagePartnerController::class, [
+        'names' => 'backoffice.partnerships',
+        'parameters' => ['partnerships' => 'homepagePartner'],
+    ])->except(['show']);
 
     // -------------------------------------------------------------------------
     // 시스템 관리
@@ -50,13 +184,13 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
 
     // 관리자 메뉴 관리
     Route::resource('admin-menus', AdminMenuController::class, [
-        'names' => 'backoffice.admin-menus'
+        'names' => 'backoffice.admin-menus',
     ])->except(['show']);
 
     // 메뉴 순서 업데이트
     Route::post('admin-menus/update-order', [AdminMenuController::class, 'updateOrder'])
         ->name('backoffice.admin-menus.update-order');
-    
+
     // 메뉴 부모 업데이트 (드래그로 메뉴 이동)
     Route::post('admin-menus/update-parent', [AdminMenuController::class, 'updateParent'])
         ->name('backoffice.admin-menus.update-parent');
@@ -95,7 +229,7 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
         ->name('backoffice.categories.generate-preview-code');
 
     Route::resource('categories', CategoryController::class, [
-        'names' => 'backoffice.categories'
+        'names' => 'backoffice.categories',
     ])->except(['show']);
 
     // 기본설정 관리
@@ -111,7 +245,7 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
         ->name('backoffice.user-access-logs');
     Route::get('admin-access-logs', [LogController::class, 'adminAccessLogs'])
         ->name('backoffice.admin-access-logs');
-    
+
     // 통계 관리
     Route::get('access-statistics', [AccessStatisticsController::class, 'index'])
         ->name('backoffice.access-statistics');
@@ -124,12 +258,12 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
     Route::post('admins/check-login-id', [AdminController::class, 'checkLoginId'])
         ->name('backoffice.admins.check-login-id');
     Route::resource('admins', AdminController::class, [
-        'names' => 'backoffice.admins'
+        'names' => 'backoffice.admins',
     ]);
 
     // 관리자 권한 그룹 관리
     Route::resource('admin-groups', AdminGroupController::class, [
-        'names' => 'backoffice.admin-groups'
+        'names' => 'backoffice.admin-groups',
     ])->except(['show']);
 
     // 권한 그룹 권한 설정
@@ -150,13 +284,13 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
 
             return response()->json([
                 'uploaded' => true,
-                'url' => asset('storage/' . $path)
+                'url' => asset('storage/'.$path),
             ]);
         }
 
         return response()->json([
             'uploaded' => false,
-            'error' => ['message' => '이미지 업로드에 실패했습니다.']
+            'error' => ['message' => '이미지 업로드에 실패했습니다.'],
         ]);
     });
 
@@ -177,13 +311,13 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
 
     // 게시판 관리
     Route::resource('boards', BoardController::class, [
-        'names' => 'backoffice.boards'
+        'names' => 'backoffice.boards',
     ])->except(['show']); // show는 제외 (게시글 목록과 충돌)
 
     // 게시판 템플릿 관리
     Route::resource('board-templates', BoardTemplateController::class, [
         'names' => 'backoffice.board-templates',
-        'parameters' => ['board-templates' => 'boardTemplate']
+        'parameters' => ['board-templates' => 'boardTemplate'],
     ]);
 
     // 게시판 템플릿 추가 기능
@@ -195,7 +329,7 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
     // 게시판 스킨 관리
     Route::resource('board-skins', BoardSkinController::class, [
         'names' => 'backoffice.board-skins',
-        'parameters' => ['board-skins' => 'boardSkin']
+        'parameters' => ['board-skins' => 'boardSkin'],
     ]);
 
     // 게시판 스킨 템플릿 편집
@@ -208,12 +342,12 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
 
     // 게시글 관리
     Route::resource('posts', BoardPostController::class, [
-        'names' => 'backoffice.posts'
+        'names' => 'backoffice.posts',
     ]);
 
     // 회원 관리
     Route::resource('users', UserController::class, [
-        'names' => 'backoffice.users'
+        'names' => 'backoffice.users',
     ]);
     Route::get('withdrawn', [MemberController::class, 'withdrawn'])->name('backoffice.withdrawn');
     Route::post('withdrawn/{id}/restore', [MemberController::class, 'restore'])->name('backoffice.withdrawn.restore');
@@ -232,13 +366,13 @@ Route::prefix('backoffice')->middleware(['backoffice'])->group(function () {
 
     // 배너 관리
     Route::resource('banners', BannerController::class, [
-        'names' => 'backoffice.banners'
+        'names' => 'backoffice.banners',
     ]);
     Route::post('banners/update-order', [BannerController::class, 'updateOrder'])->name('backoffice.banners.update-order');
 
     // 팝업 관리
     Route::resource('popups', PopupController::class, [
-        'names' => 'backoffice.popups'
+        'names' => 'backoffice.popups',
     ]);
     Route::post('popups/update-order', [PopupController::class, 'updateOrder'])->name('backoffice.popups.update-order');
 

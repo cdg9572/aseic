@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
+    public const GROUP_CODE_PHOTO_GALLERY = 'MEDIA_PHOTO_GALLERY';
+
+    public const GROUP_CODE_NEWS_CLIPPINGS = 'MEDIA_NEWS_CLIPPINGS';
+
     protected $fillable = [
         'parent_id',
         'code',

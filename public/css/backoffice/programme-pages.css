@@ -1,0 +1,11 @@
+.bo-programme-full-field,
+.bo-programme-full-field .board-file-upload,
+.bo-programme-full-field .board-file-input-wrapper {
+    width: 100%;
+    max-width: none;
+}
+
+.bo-programme-book-buttons {
+    display: inline-flex;
+    gap: 4px;
+}

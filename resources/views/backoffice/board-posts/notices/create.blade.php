@@ -29,6 +29,11 @@
             <form action="{{ route('backoffice.board-posts.store', $board->slug ?? 'notice') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
+                <div class="board-form-group">
+                    <label for="custom_field_subtitle" class="board-form-label">Sub Title</label>
+                    <textarea class="board-form-control board-form-textarea" id="custom_field_subtitle" name="custom_field_subtitle" rows="8" data-backoffice-ckeditor>{{ old('custom_field_subtitle') }}</textarea>
+                </div>
+
                 @if($board->isNoticeEnabled())
                 <div class="board-form-group">
                     <div class="board-checkbox-item">
@@ -101,6 +106,7 @@
                 <!-- 커스텀 필드 입력 폼 -->
                 @if($board->custom_fields_config && count($board->custom_fields_config) > 0)
                     @foreach($board->custom_fields_config as $fieldConfig)
+                        @continue($fieldConfig['name'] === 'subtitle')
                         <div class="board-form-group">
                             <label for="custom_field_{{ $fieldConfig['name'] }}" class="board-form-label">
                                 {{ $fieldConfig['label'] }}

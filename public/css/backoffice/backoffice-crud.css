@@ -44,10 +44,11 @@
 
 .input-with-button { display: flex; gap: 10px; }
 .input-with-button .board-form-control { flex: 1; max-width: none; }
+.input-with-button .bo-address-postcode { flex: 0 0 180px; max-width: 180px; }
 .checkbox-group { display: flex; gap: 15px; }
 .checkbox-label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
-.board-radio-group { display: flex; gap: 15px; }
-.board-radio-item { display: flex; align-items: center; gap: 5px; }
+.board-radio-group { display: flex; align-items: center; gap: 18px; }
+.board-radio-item { display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; }
 .check-result { margin-top: 5px; font-size: 12px; padding: 5px; }
 .check-result.success { color: #28a745; }
 .check-result.error { color: #dc3545; }
@@ -75,4 +76,75 @@
 .bo-inline-form {
     display: inline-block;
     margin: 0;
+}
+
+/* 필드가 많은 전용 CRUD 폼에서 members 구조를 유지하며 세로 밀도만 높입니다. */
+.bo-compact-form .bo-form-row { padding: 4px 0; }
+.bo-compact-form .bo-form-label { padding: 6px 0; }
+.bo-compact-form .bo-section-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+}
+.bo-compact-form .bo-form-section + .bo-form-section { margin-top: 14px; }
+.bo-compact-form .board-form-control { padding: 7px 10px; }
+.bo-compact-form .board-radio-group { min-height: 35px; }
+.bo-compact-form .ck-editor__editable {
+    min-height: 240px !important;
+    height: 240px !important;
+}
+.bo-inline-fields {
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr) auto minmax(180px, 1fr);
+    align-items: center;
+    gap: 8px;
+}
+
+.bo-address-contact {
+    margin-bottom: 12px;
+    padding: 8px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 5px;
+}
+
+.bo-check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px 14px;
+}
+
+/* 여러 항목을 추가·삭제하는 ASEIC 공용 반복 폼 */
+.bo-repeat-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0 8px;
+}
+
+.bo-repeat-toolbar .bo-form-label {
+    padding: 0;
+}
+
+.bo-repeat-list {
+    width: 100%;
+}
+
+.bo-repeat-item {
+    margin-bottom: 12px;
+    padding: 8px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 5px;
+}
+
+.bo-repeat-full-field,
+.bo-repeat-full-field .board-file-upload,
+.bo-repeat-full-field .board-file-input-wrapper {
+    width: 100%;
+    max-width: none;
+}
+
+@media (max-width: 1100px) {
+    .bo-inline-fields {
+        grid-template-columns: 1fr;
+    }
 }
