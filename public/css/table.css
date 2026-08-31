@@ -1,0 +1,103 @@
+/* Programme */
+	.tbl_radius .head,
+	.tbl_radius .con {display:flex;}
+	.tbl_radius .head {border-top:#0061C7 2px solid; border-radius:16px; background:#F9FAFD; font-size:22px; color:#191F28; font-weight:600; line-height:80px; text-align:center;}
+	.tbl_radius .time {width:230px;}
+	.tbl_radius .program,
+	.tbl_radius .program_wrap {position:relative; width:calc(100% - 230px);}
+	.tbl_radius .con {border-bottom:#E5E8EB 1px solid;}
+	.tbl_radius .body .time {padding:32px 0; text-align:center; line-height:33px;}
+	.tbl_radius .body .program,
+	.tbl_radius .body .program_wrap {font-size:22px; color:#191F28; font-weight:600; padding:32px 0 32px 64px;}
+	.tbl_radius .body .program_wrap .program {position:relative; padding:0; width:100%;}
+	.tbl_radius .body .program_wrap .program:after {content:""; position:absolute; top:50%; right:0; width:32px; height:32px; background:#F2F4F6 url('/images/arrow_aco.svg') no-repeat 50% 50%; border:#E5E8EB 1px solid; border-radius:50%; margin-top:-16px; transition:.2s linear;}
+	.tbl_radius .body .active .program_wrap .program:after {transform:rotate(180deg);}
+	.tbl_radius .body .btn_accordion_toggle {position:absolute; top:0; left:0; width:100%; height:100%;}
+	.tbl_radius .body .detail li {padding-top:24px; margin-top:24px; border-top:#E5E8EB 1px solid;}
+	.tbl_radius .body .detail .tt {display:flex; gap:16px; font-size:20px; color:#191F28; font-weight:600; line-height:1.6;}
+	.tbl_radius .body .detail .tt span {position:relative; color:#6B7684; font-weight:400;}
+	.tbl_radius .body .detail .tt span:before {content:""; position:absolute; top:50%; left:-9px; width:1px; height:14px; background:#E5E8EB; transform:translateY(-50%);}
+	.tbl_radius .body p {font-size:18px; color:#6B7684; font-weight:400; line-height:1.65; margin-top:4px;}
+/* Past Forums (2015~2024) */
+	.box_tbl .head {background:#F2F7FC;}
+	.box_tbl .date {width:300px;}
+	.box_tbl .program {width:calc(100% - 300px);}
+	.box_tbl .body {padding-top:24px;}
+	.box_tbl .body .date {padding:32px 0 32px 40px; text-align:left;}
+	.box_tbl .body .program {padding-left:34px;}
+	.box_tbl .body .con {align-items:center; border-bottom:0; background:#FAFBFA; border-radius:16px;}
+	.box_tbl .body .con + .con {margin-top:16px;}
+
+/* ------------------------------ PC Guide ------------------------------ */
+@media screen and (max-width:1439px){
+/* Programme */
+	.tbl_radius .head {font-size:20px; line-height:70px;}
+	.tbl_radius .time {width:220px;}
+	.tbl_radius .program,
+	.tbl_radius .program_wrap {width:calc(100% - 220px);}
+	.tbl_radius .body .time {padding:26px 0; line-height:30px;}
+	.tbl_radius .body .program,
+	.tbl_radius .body .program_wrap {font-size:20px; padding:26px 0 26px 56px;}
+	.tbl_radius .body .detail .tt {gap:14px; font-size:18px;}
+	.tbl_radius .body p {font-size:16px;}
+/* Past Forums (2015~2024) */
+	.box_tbl .date {width:240px;}
+	.box_tbl .program {width:calc(100% - 240px);}
+	.box_tbl .body {padding-top:20px;}
+	.box_tbl .body .date {padding:26px 0 26px 30px;}
+	.box_tbl .body .program {padding-left:24px;}
+	.box_tbl .body .con + .con {margin-top:14px;}
+}
+
+/* ------------------------------ Tablet PC ------------------------------ */
+@media screen and (max-width:1023px){
+/* Programme */
+	.tbl_radius .head {font-size:18px; line-height:60px;}
+	.tbl_radius .time {width:200px;}
+	.tbl_radius .program,
+	.tbl_radius .program_wrap {width:calc(100% - 200px);}
+	.tbl_radius .body .time {padding:22px 0; line-height:27px;}
+	.tbl_radius .body .program,
+	.tbl_radius .body .program_wrap {font-size:18px; padding:22px 0 22px 30px;}
+	.tbl_radius .body .program_wrap .program:after {width:28px; height:28px; margin-top:-14px;}
+	.tbl_radius .body .detail li {padding-top:20px; margin-top:20px;}
+	.tbl_radius .body .detail .tt {gap:12px; font-size:16px;}
+	.tbl_radius .body .detail .tt span:before {left:-7px; height:12px;}
+	.tbl_radius .body p {font-size:14px;}
+/* Past Forums (2015~2024) */
+	.box_tbl .date {width:200px;}
+	.box_tbl .program {width:calc(100% - 200px);}
+	.box_tbl .body {padding-top:16px;}
+	.box_tbl .body .date {padding:22px 0 22px 20px;}
+	.box_tbl .body .program {padding-left:20px;}
+	.box_tbl .body .con + .con {margin-top:12px;}
+}
+
+/* ------------------------------ Mobile ------------------------------ */
+@media screen and (max-width:767px){
+/* Programme */
+	.tbl_radius {border-top:#0061C7 2px solid; border-radius:12px;}
+	.tbl_radius .head {display: none;}
+	.tbl_radius .time,
+	.tbl_radius .program,
+	.tbl_radius .program_wrap {width:100%;}
+	.tbl_radius .con {flex-direction: column; padding:15px 0;}
+	.tbl_radius .body .time {padding:5px 0; line-height:20px; text-align: left;}
+	.tbl_radius .body .program,
+	.tbl_radius .body .program_wrap {font-size:15px; padding:5px 0;}
+	.tbl_radius .body .program_wrap .program:after {width:24px; height:24px; margin-top:-12px; background-size:50%;}
+	.tbl_radius .body .detail {padding:0 16px 15px; background: #f5f5f5;}
+	.tbl_radius .body .detail li {padding-top:16px; margin-top:16px;}
+	.tbl_radius .body .detail li:first-child {border-top: 0;}
+	.tbl_radius .body .detail .tt {gap:10px; font-size:14px;}
+	.tbl_radius .body .detail .tt span:before {left:-6px; height:10px;}
+	.tbl_radius .body p {font-size:13px;}
+/* Past Forums (2015~2024) */
+	.box_tbl .date,
+	.box_tbl .program {width:100%;}
+	.box_tbl .body {padding-top:12px;}
+	.box_tbl .body .con {padding:15px 16px;}
+	.box_tbl .body .date {padding:5px 0;}
+	.box_tbl .body .program {padding-left:0;}
+	.box_tbl .body .con + .con {margin-top:8px;}
+}

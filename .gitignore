@@ -48,6 +48,7 @@ setup-*-server.sh.backup
 *~
 
 public/temp/
+public/css/min/*.lock
 docs/
 backup/
 deploy/
