@@ -98,7 +98,7 @@
     </style>
 </head>
 <body>
-    <div class="popup-container">
+    <div class="popup-container" data-popup-id="{{ $popup->id }}">
         <div class="popup-body">
             @if($popup->popup_type === 'image' && $popup->popup_image)
                 @if($popup->url)
@@ -118,39 +118,9 @@
                 <input type="checkbox" class="popup-today-close" id="todayClose">
                 1일 동안 보지 않음
             </label>
-            <button type="button" class="popup-close-btn" onclick="closePopup()">닫기</button>
+            <button type="button" class="popup-close-btn">닫기</button>
         </div>
     </div>
-
-    <script>
-        function closePopup() {
-            // 오늘 하루 보지 않기 체크 확인
-            const todayClose = document.getElementById('todayClose').checked;
-            if (todayClose) {
-                // 쿠키 설정 (자정까지)
-                const expires = new Date();
-                expires.setHours(23, 59, 59, 999);
-                document.cookie = 'popup_hide_{{ $popup->id }}=true; expires=' + expires.toUTCString() + '; path=/; SameSite=Lax';
-            }
-            
-            // 팝업 창 닫기
-            window.close();
-
-            // 일부 브라우저/직접 접근 탭에서는 close가 막힐 수 있어 폴백 처리
-            setTimeout(function() {
-                if (!window.closed) {
-                    window.location.href = 'about:blank';
-                    window.close();
-                }
-            }, 50);
-        }
-        
-        // ESC 키로 팝업 닫기
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closePopup();
-            }
-        });
-    </script>
+    <script src="{{ asset('js/popup-window.js') }}?v={{ filemtime(public_path('js/popup-window.js')) }}"></script>
 </body>
 </html>

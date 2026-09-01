@@ -66,11 +66,14 @@ class MainPageController extends Controller
             ->with('success', 'Main Page가 등록되었습니다.');
     }
 
-    public function edit(MainPage $mainPage): View
+    public function edit(Request $request, MainPage $mainPage): View
     {
         $mainPage->load(['speakers', 'links']);
 
-        return view('backoffice.main-pages.edit', $this->formData($mainPage));
+        return view('backoffice.main-pages.edit', [
+            ...$this->formData($mainPage),
+            'returnUrl' => $this->returnUrl($request),
+        ]);
     }
 
     public function update(MainPageRequest $request, MainPage $mainPage): RedirectResponse
@@ -197,13 +200,16 @@ class MainPageController extends Controller
 
     private function redirectAfterMutation(Request $request, string $message): RedirectResponse
     {
-        $returnUrl = $request->input('return_url');
+        return redirect()->to($this->returnUrl($request))->with('success', $message);
+    }
+
+    private function returnUrl(Request $request): string
+    {
+        $returnUrl = $request->input('return_url', $request->query('return_url'));
         $indexUrl = route('backoffice.main-pages.index');
 
-        if (is_string($returnUrl) && str_starts_with($returnUrl, $indexUrl)) {
-            return redirect()->to($returnUrl)->with('success', $message);
-        }
-
-        return redirect()->route('backoffice.main-pages.index')->with('success', $message);
+        return is_string($returnUrl) && str_starts_with($returnUrl, $indexUrl)
+            ? $returnUrl
+            : $indexUrl;
     }
 }

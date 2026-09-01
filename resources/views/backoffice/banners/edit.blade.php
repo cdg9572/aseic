@@ -36,6 +36,8 @@
                             <input type="hidden" name="remove_desktop_image" id="remove_desktop_image" value="0">
                             <input type="hidden" name="remove_mobile_image" id="remove_mobile_image" value="0">
 
+                        @include('backoffice.homepage-assets._main_page_select', ['assetLabel' => '배너'])
+
                         <!-- 1. 배너제목 -->
                         <div class="board-form-group">
                             <label for="title" class="board-form-label">배너제목 <span class="required">*</span></label>

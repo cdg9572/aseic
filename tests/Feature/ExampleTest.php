@@ -2,18 +2,26 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\MainPage;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
+    use DatabaseTransactions;
+
     /**
      * A basic test example.
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_the_application_root_redirects_to_a_visible_forum(): void
     {
-        $response = $this->get('/');
+        MainPage::query()->update(['is_visible' => false]);
+        $mainPage = MainPage::factory()->create([
+            'folder_name' => 'example-'.Str::lower(Str::random(12)),
+            'is_visible' => true,
+        ]);
 
-        $response->assertStatus(200);
+        $this->get('/')->assertRedirect(route('home', ['mainPage' => $mainPage->folder_name]));
     }
 }

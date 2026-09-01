@@ -1,8 +1,6 @@
+@props(['banners', 'mainPage'])
+
 @php
-    $slides = [
-        ['id' => '2026-forum-main', 'title' => '2026 Global<br>Eco-Innovation Forum', 'description' => 'Climate-Smart Innovations for Sustainable Local Economies', 'location' => 'September 2, 2026 · ICC Jeju', 'dates' => '2026. 09. 03 (Thu) – 2026. 09. 07 (Mon)', 'image' => '/images/mvisual01.avif'],
-        ['id' => '2026-forum-secondary', 'title' => '2026 Global<br>Eco-Innovation Forum', 'description' => 'Climate-Smart Innovations for Sustainable Local Economies', 'location' => 'September 2, 2026 · ICC Jeju', 'dates' => '2026. 09. 03 (Thu) – 2026. 09. 07 (Mon)', 'image' => '/images/mvisual01.avif'],
-    ];
 
     $themes = [
         ['icon' => 'icon_main01.svg', 'title' => 'Global Cooperation', 'description' => 'Strengthen global networks and cooperation for sustainable development.'],
@@ -15,22 +13,45 @@
 
 <section class="mvisual">
     <h2 class="sound_only">Main Banner</h2>
+    @if ($banners->isNotEmpty())
     <div class="main_slide relative">
         <div class="swiper main_visual_swiper">
             <div class="swiper-wrapper">
-                @foreach($slides as $slide)
+                @foreach($banners as $banner)
+                    @php
+                        $desktopImage = $banner->desktop_image
+                            ? (str_starts_with($banner->desktop_image, '/') ? asset(ltrim($banner->desktop_image, '/')) : asset('storage/'.$banner->desktop_image))
+                            : null;
+                        $mobileImage = $banner->mobile_image
+                            ? (str_starts_with($banner->mobile_image, '/') ? asset(ltrim($banner->mobile_image, '/')) : asset('storage/'.$banner->mobile_image))
+                            : null;
+                    @endphp
                     <div class="swiper-slide">
                         <div class="box">
-                            <div class="bg imgfit" aria-hidden="true"><img src="{{ $slide['image'] }}" alt=""></div>
+                            @if ($desktopImage || $mobileImage)
+                                <div class="bg imgfit" aria-hidden="true">
+                                    <picture>
+                                        @if ($mobileImage)
+                                            <source media="(max-width: 768px)" srcset="{{ $mobileImage }}">
+                                        @endif
+                                        <img src="{{ $desktopImage ?: $mobileImage }}" alt="">
+                                    </picture>
+                                </div>
+                            @endif
                             <div class="flex inner">
                                 <div class="txt">
-                                    <div class="tit">{!! $slide['title'] !!}</div>
-                                    <p>{{ $slide['description'] }}</p>
-                                    <ul class="info">
-                                        <li>{{ $slide['location'] }}</li>
-                                        <li>{{ $slide['dates'] }}</li>
-                                    </ul>
-                                    <a href="{{ route('programme.list') }}" class="btn_link">View 2026 Forum</a>
+                                    <div class="tit">{!! nl2br(e($banner->main_text ?: $mainPage->event_name ?: $banner->title)) !!}</div>
+                                    @if ($banner->sub_text)
+                                        <p>{{ $banner->sub_text }}</p>
+                                    @endif
+                                    @if ($mainPage->event_date_display)
+                                        <ul class="info">
+                                            <li>{{ $mainPage->event_date_display }}</li>
+                                        </ul>
+                                    @endif
+                                    @if ($banner->url || $banner->video_url)
+                                        <a href="{{ $banner->url ?: $banner->video_url }}" target="{{ $banner->url_target }}" class="btn_link">View More</a>
+                                    @endif
                                 </div>
                                 <ul class="icons">
                                     @foreach($themes as $theme)
@@ -54,6 +75,7 @@
             <button type="button" class="visual-toggle pause" id="visualToggle" aria-label="Pause banner autoplay">정지</button>
         </div>
     </div>
+    @endif
     <div class="main_links">
         <ul class="inner">
             <li class="i1"><a href="{{ route('programme.theme') }}">Theme</a></li>
@@ -65,10 +87,11 @@
 </section>
 
 @push('scripts')
+@if ($banners->isNotEmpty())
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var visualSwiper = new Swiper('.main_visual_swiper', {
-        loop: true,
+        loop: {{ $banners->count() > 1 ? 'true' : 'false' }},
         autoplay: { delay: 5000, disableOnInteraction: false },
         navigation: { nextEl: '.visual-next', prevEl: '.visual-prev' },
         pagination: { el: '.visual-pagination', clickable: true }
@@ -93,4 +116,5 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 })
 </script>
+@endif
 @endpush

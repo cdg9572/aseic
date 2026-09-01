@@ -18,6 +18,8 @@
             <div class="board-card-body">
                 <form action="{{ route('backoffice.popups.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+
+                    @include('backoffice.homepage-assets._main_page_select', ['assetLabel' => '팝업'])
                     
                     <div class="board-form-row">
                         <div class="board-form-col board-form-col-12">

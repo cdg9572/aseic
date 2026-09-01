@@ -4,30 +4,34 @@ namespace App\Http\Controllers\Backoffice;
 
 use App\Http\Controllers\Controller;
 use App\Models\Popup;
+use App\Services\Backoffice\MainPageAssetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class PopupController extends Controller
 {
+    public function __construct(private readonly MainPageAssetService $mainPageAssetService) {}
+
     /**
      * 팝업 목록
      */
     public function index(Request $request)
     {
         $query = Popup::query();
-        
+
         // 사용여부 필터
         if ($request->filled('is_active')) {
             $query->where('is_active', $request->is_active);
         }
-        
+
         // 게시기간 필터
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->where('use_period', true)
-                  ->where('start_date', '>=', $request->start_date)
-                  ->where('end_date', '<=', $request->end_date);
+                ->where('start_date', '>=', $request->start_date)
+                ->where('end_date', '<=', $request->end_date);
         }
-        
+
         // 등록일 필터
         if ($request->filled('created_from')) {
             $query->whereDate('created_at', '>=', $request->created_from);
@@ -35,28 +39,28 @@ class PopupController extends Controller
         if ($request->filled('created_to')) {
             $query->whereDate('created_at', '<=', $request->created_to);
         }
-        
+
         // 팝업제목 검색
         if ($request->filled('title')) {
-            $query->where('title', 'like', '%' . $request->title . '%');
+            $query->where('title', 'like', '%'.$request->title.'%');
         }
-        
+
         // 팝업타입 필터
         if ($request->filled('popup_type')) {
             $query->where('popup_type', $request->popup_type);
         }
-        
+
         // 팝업표시타입 필터
         if ($request->filled('popup_display_type')) {
             $query->where('popup_display_type', $request->popup_display_type);
         }
-        
+
         // 목록 개수 설정
         $perPage = $request->get('per_page', 10);
         $perPage = in_array($perPage, [10, 20, 50, 100]) ? $perPage : 10;
-        
+
         $popups = $query->ordered()->paginate($perPage);
-        
+
         return view('backoffice.popups.index', compact('popups'));
     }
 
@@ -65,7 +69,10 @@ class PopupController extends Controller
      */
     public function create()
     {
-        return view('backoffice.popups.create');
+        return view('backoffice.popups.create', [
+            'mainPages' => $this->mainPageAssetService->mainPageOptions(),
+            'selectedMainPageId' => null,
+        ]);
     }
 
     /**
@@ -74,6 +81,7 @@ class PopupController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'main_page_id' => ['nullable', 'integer', Rule::exists('main_pages', 'id')->whereNull('deleted_at')],
             'title' => 'required|string|max:255',
             'use_period' => 'nullable|boolean',
             'start_date' => 'nullable|required_if:use_period,1|date',
@@ -92,27 +100,28 @@ class PopupController extends Controller
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
-        $data = $request->all();
+        $data = $request->except('main_page_id');
         $data['use_period'] = $request->boolean('use_period');
-        
+
         // 이미지 업로드 처리
         if ($request->hasFile('popup_image')) {
             $data['popup_image'] = $request->file('popup_image')->store('popups', 'public');
         }
-        
+
         // 기본값 설정
         $data['width'] = $data['width'] ?: 400;
         $data['height'] = $data['height'] ?: 300;
         $data['position_top'] = $data['position_top'] ?: 100;
         $data['position_left'] = $data['position_left'] ?: 100;
-        
+
         // 게시기간 사용하지 않는 경우 날짜 초기화
-        if (!$data['use_period']) {
+        if (! $data['use_period']) {
             $data['start_date'] = null;
             $data['end_date'] = null;
         }
 
-        Popup::create($data);
+        $popup = Popup::create($data);
+        $this->mainPageAssetService->syncPopup($popup, $this->mainPageId($request));
 
         return redirect()->route('backoffice.popups.index')
             ->with('success', '팝업이 성공적으로 생성되었습니다.');
@@ -131,7 +140,11 @@ class PopupController extends Controller
      */
     public function edit(Popup $popup)
     {
-        return view('backoffice.popups.edit', compact('popup'));
+        return view('backoffice.popups.edit', [
+            'popup' => $popup,
+            'mainPages' => $this->mainPageAssetService->mainPageOptions(),
+            'selectedMainPageId' => $this->mainPageAssetService->selectedMainPageIdForPopup($popup),
+        ]);
     }
 
     /**
@@ -140,6 +153,7 @@ class PopupController extends Controller
     public function update(Request $request, Popup $popup)
     {
         $request->validate([
+            'main_page_id' => ['nullable', 'integer', Rule::exists('main_pages', 'id')->whereNull('deleted_at')],
             'title' => 'required|string|max:255',
             'use_period' => 'nullable|boolean',
             'start_date' => 'nullable|required_if:use_period,1|date',
@@ -158,9 +172,9 @@ class PopupController extends Controller
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
-        $data = $request->all();
+        $data = $request->except('main_page_id');
         $data['use_period'] = $request->boolean('use_period');
-        
+
         // 이미지 업로드 처리
         if ($request->hasFile('popup_image')) {
             // 기존 이미지 삭제
@@ -169,7 +183,7 @@ class PopupController extends Controller
             }
             $data['popup_image'] = $request->file('popup_image')->store('popups', 'public');
         }
-        
+
         // 이미지 제거 처리
         if ($request->has('remove_popup_image') && $request->remove_popup_image) {
             if ($popup->popup_image) {
@@ -177,20 +191,21 @@ class PopupController extends Controller
             }
             $data['popup_image'] = null;
         }
-        
+
         // 기본값 설정
         $data['width'] = $data['width'] ?: 400;
         $data['height'] = $data['height'] ?: 300;
         $data['position_top'] = $data['position_top'] ?: 100;
         $data['position_left'] = $data['position_left'] ?: 100;
-        
+
         // 게시기간 사용하지 않는 경우 날짜 초기화
-        if (!$data['use_period']) {
+        if (! $data['use_period']) {
             $data['start_date'] = null;
             $data['end_date'] = null;
         }
 
         $popup->update($data);
+        $this->mainPageAssetService->syncPopup($popup, $this->mainPageId($request));
 
         return redirect()->route('backoffice.popups.index')
             ->with('success', '팝업이 성공적으로 수정되었습니다.');
@@ -205,7 +220,7 @@ class PopupController extends Controller
         if ($popup->popup_image) {
             Storage::disk('public')->delete($popup->popup_image);
         }
-        
+
         $popup->delete();
 
         return redirect()->route('backoffice.popups.index')
@@ -238,5 +253,12 @@ class PopupController extends Controller
     public function showPopup(Popup $popup)
     {
         return view('popup.show', compact('popup'));
+    }
+
+    private function mainPageId(Request $request): ?int
+    {
+        $mainPageId = $request->integer('main_page_id');
+
+        return $mainPageId > 0 ? $mainPageId : null;
     }
 }

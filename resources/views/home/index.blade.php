@@ -2,75 +2,77 @@
 
 @section('styles')
 {!! \App\Helpers\CssHelper::minTag('/css/main.css') !!}
+{!! \App\Helpers\CssHelper::minTag('/css/popup.css') !!}
 @endsection
 
 @section('content')
+@php
+    $programmeItems = $mainPage->programme_item_list;
+    $programmeBackground = $mainPage->programme_background_path
+        ? (str_starts_with($mainPage->programme_background_path, '/') ? asset(ltrim($mainPage->programme_background_path, '/')) : asset('storage/'.$mainPage->programme_background_path))
+        : null;
+    $registerBackground = $mainPage->register_background_path
+        ? (str_starts_with($mainPage->register_background_path, '/') ? asset(ltrim($mainPage->register_background_path, '/')) : asset('storage/'.$mainPage->register_background_path))
+        : null;
+@endphp
 <h1 class="sound_only">ASEIC 메인 페이지</h1>
 
-<x-main.main-visual />
-<x-main.speaker-slider />
+<x-main.main-visual :banners="$banners" :main-page="$mainPage" />
+<x-main.speaker-slider :speakers="$speakers" />
 
+@if ($programmeItems !== [])
 <section class="mcon main_programme">
+	@if ($programmeBackground)
+		<div class="main-section-background imgfit" aria-hidden="true"><img src="{{ $programmeBackground }}" alt=""></div>
+	@endif
 	<div class="inner flex">
-		<div class="mtit"><h2>PROGRAMME</h2><a href="/programme" class="btn_link btn_bg_gra">More Info</a></div>
+		<div class="mtit"><h2>PROGRAMME</h2><a href="{{ route('programme.list') }}" class="btn_link btn_bg_gra">More Info</a></div>
 		<ul class="timetable">
-			<li>
-				<div class="time">09:00 AM ~ 09:30 AM</div>
-				<div class="cont">
-					<strong>Registration</strong>
-				</div>
-			</li>
-			<li>
-				<div class="time">09:30 AM ~ 09:50 AM</div>
-				<div class="cont">
-					<strong>Opening Ceremony</strong>
-					<p>Opening Remarks, Welcome Remarks, Congratulatory Remarks </p>
-				</div>
-			</li>
-			<li>
-				<div class="time">09:50 AM ~ 10:30 AM</div>
-				<div class="cont">
-					<strong>Keynote Speeches</strong>
-					<p>Global Policy Directions for Green & Inclusive SME Growth</p>
-				</div>
-			</li>
-			<li>
-				<div class="time">10:30 AM ~ 10:50 AM</div>
-				<div class="cont">
-					<strong>Networking Break</strong>
-				</div>
-			</li>
+			@foreach ($programmeItems as $item)
+				<li>
+					<div class="time">{{ $item['time'] }}</div>
+					<div class="cont">
+						@if ($item['subject'] !== '')<strong>{{ $item['subject'] }}</strong>@endif
+						@if ($item['content'] !== '')<p>{{ $item['content'] }}</p>@endif
+					</div>
+				</li>
+			@endforeach
 		</ul>
 	</div>
 </section>
+@endif
 
 <section class="mcon main_register">
+	@if ($registerBackground)
+		<div class="main-section-background imgfit" aria-hidden="true"><img src="{{ $registerBackground }}" alt=""></div>
+	@endif
 	<div class="inner">
 		<div class="flex">
 			<div class="mtit"><h2>REGISTER</h2></div>
 			<p>Join the forum and be part of the conversation on sustainable innovation <br/>Complete your registration to participate in the programme and connect with experts from around the world.</p>
-			<a href="/registration" class="btn_link btn_more">Register Now</a>
+			<a href="{{ route('registration.index') }}" class="btn_link btn_more">Register Now</a>
 		</div>
 	</div>
 </section>
 
 <section class="mcon main_board">
 	<div class="flex inner">
-		<div class="box">
-			<div class="mtit"><h2>ANNOUNCEMENTS</h2><a href="/announcements" class="btn_link btn_bg_gra">More Info</a></div>
+		<div @class(['box', 'main-board-full' => ! $mainPage->past_forum_video_url])>
+			<div class="mtit"><h2>ANNOUNCEMENTS</h2><a href="{{ route('announcements.index') }}" class="btn_link btn_bg_gra">More Info</a></div>
 			<ul class="list">
-				<li><a href="/announcements/view"><div class="tit">Event Information</div><div class="date">2026.07.13</div></a></li>
-				<li><a href="/announcements/view"><div class="tit">frequently asked question(FAQ)</div><div class="date">2026.07.13</div></a></li>
-				<li><a href="/announcements/view"><div class="tit">frequently asked question(FAQ)</div><div class="date">2026.07.13</div></a></li>
-				<li><a href="/announcements/view"><div class="tit">Pre-registration information</div><div class="date">2026.07.13</div></a></li>
+				@foreach ($noticePosts as $noticePost)
+					<li><a href="{{ route('announcements.view') }}"><div class="tit">{{ $noticePost->title }}</div><div class="date">{{ \Illuminate\Support\Carbon::parse($noticePost->created_at)->format('Y.m.d') }}</div></a></li>
+				@endforeach
 			</ul>
 		</div>
+		@if ($mainPage->past_forum_video_url)
 		<div class="box">
-			<div class="mtit"><h2>PAST FORUM VIDEO</h2><a href="/media/youtube" class="btn_link btn_bg_gra">More Info</a></div>
+			<div class="mtit"><h2>PAST FORUM VIDEO</h2><a href="{{ route('media.youtube') }}" class="btn_link btn_bg_gra">More Info</a></div>
 			<div class="video_box">
-				<a href="https://www.youtube.com/shorts/CCpPwCRE-f4" target="_blank"><img src="/images/img_sample_video.avif" alt="2025 글로벌 에코 이노베이션 포럼 영상"></a>
+				<a href="{{ $mainPage->past_forum_video_url }}" target="_blank" rel="noopener"><img src="/images/img_sample_video.avif" alt="{{ $mainPage->event_name }} Past Forum Video"></a>
 			</div>
 		</div>
+		@endif
 	</div>
 </section>
 
@@ -79,20 +81,19 @@
 @push('scripts')
 <link rel="stylesheet" href="/css/swiper.css" media="all">
 <script src="/js/swiper.js"></script>
+<script src="{{ asset('js/popup.js') }}?v={{ filemtime(public_path('js/popup.js')) }}"></script>
 @endpush
 
 @section('popups')
 @if($popups->count() > 0)
     @foreach($popups as $popup)
         @if($popup->popup_display_type === 'normal')
-            {{-- 일반팝업 (새창) --}}
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const popupUrl = '{{ route("popup.show", $popup->id) }}';
-                    const popupFeatures = 'width={{ $popup->width }},height={{ $popup->height }},left={{ $popup->position_left ?? 100 }},top={{ $popup->position_top ?? 100 }},scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no';
-                    window.open(popupUrl, 'popup_{{ $popup->id }}', popupFeatures);
-                });
-            </script>
+            <div hidden
+                 data-popup-window
+                 data-popup-id="{{ $popup->id }}"
+                 data-popup-url="{{ route('popup.show', $popup->id) }}"
+                 data-popup-name="popup_{{ $popup->id }}"
+                 data-popup-features="width={{ $popup->width }},height={{ $popup->height }},left={{ $popup->position_left ?? 100 }},top={{ $popup->position_top ?? 100 }},scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no"></div>
         @else
             {{-- 레이어팝업 (오버레이) --}}
             <div class="popup-layer popup-fixed"

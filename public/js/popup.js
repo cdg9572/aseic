@@ -1,70 +1,86 @@
 /**
- * 팝업 레이어 제어 스크립트
+ * 메인 화면의 일반 팝업과 레이어 팝업을 제어합니다.
  */
-(function($) {
+(function () {
     'use strict';
 
-    const PopupManager = {
-        init: function() {
-            this.checkCookies();
-            this.bindEvents();
-        },
+    const cookiePrefix = 'popup_hide_';
 
-        // 이벤트 바인딩 (이벤트 위임 패턴)
-        bindEvents: function() {
-            $(document).on('click', '.popup-footer-close-btn', function() {
-                const popupId = $(this).data('popup-id');
-                PopupManager.closePopup(popupId);
+    function getCookie(name) {
+        const cookie = document.cookie
+            .split('; ')
+            .find(function (item) {
+                return item.startsWith(name + '=');
             });
 
-            $(document).on('click', '.popup-today-label', function() {
-                const popupId = $(this).data('popup-id');
-                PopupManager.setTodayCookie(popupId);
-                PopupManager.closePopup(popupId);
-            });
-        },
+        return cookie ? cookie.substring(name.length + 1) : null;
+    }
 
-        // 팝업 닫기
-        closePopup: function(popupId) {
-            $('#popup-' + popupId).addClass('hidden');
-        },
+    function setTodayCookie(popupId) {
+        const expires = new Date();
+        expires.setHours(23, 59, 59, 999);
 
-        // 쿠키 확인 및 숨김 처리 (레이어팝업만)
-        checkCookies: function() {
-            $('.popup-layer[data-display-type="layer"]').each(function() {
-                const popupId = $(this).data('popup-id');
-                const cookieName = 'popup_hide_' + popupId;
-                
-                if (PopupManager.getCookie(cookieName)) {
-                    $(this).addClass('hidden');
-                }
-            });
-        },
-
-        // 오늘 하루 보지 않기 쿠키 설정 (자정까지)
-        setTodayCookie: function(popupId) {
-            const cookieName = 'popup_hide_' + popupId;
-            const expires = new Date();
-            expires.setHours(23, 59, 59, 999);
-            
-            document.cookie = cookieName + '=true; expires=' + expires.toUTCString() + '; path=/';
-        },
-
-        // 쿠키 가져오기
-        getCookie: function(name) {
-            const value = '; ' + document.cookie;
-            const parts = value.split('; ' + name + '=');
-            
-            if (parts.length === 2) {
-                return parts.pop().split(';').shift();
-            }
-            return null;
+        let cookie = cookiePrefix + popupId + '=1; expires=' + expires.toUTCString() + '; path=/; SameSite=Lax';
+        if (window.location.protocol === 'https:') {
+            cookie += '; Secure';
         }
-    };
 
-    // DOM 로드 완료 후 초기화
-    $(document).ready(function() {
-        PopupManager.init();
+        document.cookie = cookie;
+    }
+
+    function isHiddenToday(popupId) {
+        return getCookie(cookiePrefix + popupId) !== null;
+    }
+
+    function closeLayerPopup(popupId) {
+        const popup = document.getElementById('popup-' + popupId);
+        if (popup) {
+            popup.classList.add('hidden');
+        }
+    }
+
+    function initializeWindowPopups() {
+        document.querySelectorAll('[data-popup-window]').forEach(function (trigger) {
+            const popupId = trigger.dataset.popupId;
+            if (isHiddenToday(popupId)) {
+                return;
+            }
+
+            window.open(
+                trigger.dataset.popupUrl,
+                trigger.dataset.popupName,
+                trigger.dataset.popupFeatures
+            );
+        });
+    }
+
+    function initializeLayerPopups() {
+        document.querySelectorAll('.popup-layer[data-display-type="layer"]').forEach(function (popup) {
+            if (isHiddenToday(popup.dataset.popupId)) {
+                popup.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            const closeButton = event.target.closest('.popup-footer-close-btn');
+            if (closeButton) {
+                closeLayerPopup(closeButton.dataset.popupId);
+            }
+        });
+
+        document.addEventListener('change', function (event) {
+            if (! event.target.matches('.popup-today-close') || ! event.target.checked) {
+                return;
+            }
+
+            const popupId = event.target.dataset.popupId;
+            setTodayCookie(popupId);
+            closeLayerPopup(popupId);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeWindowPopups();
+        initializeLayerPopups();
     });
-
-})(jQuery);
+})();

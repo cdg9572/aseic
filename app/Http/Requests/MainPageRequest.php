@@ -32,7 +32,19 @@ class MainPageRequest extends FormRequest
         $mainPage = $this->route('mainPage');
         $isUpdate = $mainPage instanceof MainPage;
 
-        $folderRules = ['string', 'max:120', 'regex:/^[A-Za-z0-9_-]+$/', Rule::notIn(['default'])];
+        $reservedFolderNames = [
+            'default',
+            'publishing-original',
+            'forums',
+            'backoffice',
+            'auth',
+            'popup',
+            'css',
+            'images',
+            'js',
+            'storage',
+        ];
+        $folderRules = ['string', 'max:120', 'regex:/^[A-Za-z0-9_-]+$/', Rule::notIn($reservedFolderNames)];
         $folderRules = $isUpdate
             ? array_merge(['prohibited'], $folderRules)
             : array_merge(['required'], $folderRules, [Rule::unique('main_pages', 'folder_name')]);
@@ -126,7 +138,7 @@ class MainPageRequest extends FormRequest
             'folder_name.required' => '연도(폴더명)를 입력해주세요.',
             'folder_name.regex' => '연도(폴더명)는 공백과 한글 없이 영문, 숫자, 하이픈, 밑줄만 사용할 수 있습니다.',
             'folder_name.unique' => '이미 사용 중인 연도(폴더명)입니다.',
-            'folder_name.not_in' => 'default는 기본 템플릿 폴더명으로 사용할 수 없습니다.',
+            'folder_name.not_in' => '시스템에서 사용하는 예약 폴더명은 사용할 수 없습니다.',
             'folder_name.prohibited' => '연도(폴더명)는 생성 후 수정할 수 없습니다.',
             'event_name.required' => '행사명을 입력해주세요.',
             'event_start_date.required_unless' => '행사 시작일을 입력하거나 직접입력을 선택해주세요.',

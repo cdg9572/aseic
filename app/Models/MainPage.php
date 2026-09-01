@@ -109,6 +109,44 @@ class MainPage extends Model
     }
 
     /**
+     * @return array<int, array{time: string, subject: string, content: string}>
+     */
+    public function getProgrammeItemListAttribute(): array
+    {
+        if (! is_array($this->programme_items)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(static function (mixed $item): array {
+            $item = is_array($item) ? $item : [];
+
+            return [
+                'time' => trim((string) ($item['time'] ?? '')),
+                'subject' => trim((string) ($item['subject'] ?? '')),
+                'content' => trim((string) ($item['content'] ?? '')),
+            ];
+        }, $this->programme_items), static fn (array $item): bool => implode('', $item) !== ''));
+    }
+
+    public function getEventDateDisplayAttribute(): string
+    {
+        if ($this->use_custom_event_date) {
+            return trim((string) $this->event_date_text);
+        }
+
+        if (! $this->event_start_date) {
+            return '';
+        }
+
+        $startDate = $this->event_start_date->format('Y. m. d');
+        if (! $this->event_end_date || $this->event_start_date->isSameDay($this->event_end_date)) {
+            return $startDate;
+        }
+
+        return $startDate.' – '.$this->event_end_date->format('Y. m. d');
+    }
+
+    /**
      * @return array<int, array{path: string, name: string, size: int|null}>
      */
     private function normalizedFiles(mixed $files): array

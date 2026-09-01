@@ -1,14 +1,6 @@
-@php
-    $speakers = [
-        ['image' => '/images/img_speaker01.avif', 'position' => 'STARTUP', 'session' => 'SESSION 2', 'name' => 'MS. Sia LEE', 'organisation' => 'GREENGRIM inc, republic of korea'],
-        ['image' => '/images/img_speaker01.avif', 'position' => 'STARTUP', 'session' => 'SESSION 2', 'name' => 'MS. Nur AISYAH', 'organisation' => 'Universiti Malaya, Malaysia'],
-        ['image' => '/images/img_speaker01.avif', 'position' => 'POLICY', 'session' => 'SESSION 1', 'name' => 'MR. Daniel Wong', 'organisation' => 'ASEIC, Singapore'],
-        ['image' => '/images/img_speaker01.avif', 'position' => 'INNOVATION', 'session' => 'SESSION 3', 'name' => 'MS. Elena Müller', 'organisation' => 'GreenTech Europe, Germany'],
-        ['image' => '/images/img_speaker01.avif', 'position' => 'STARTUP', 'session' => 'SESSION 2', 'name' => 'MS. Hana Park', 'organisation' => 'EcoLab, Republic of Korea'],
-        ['image' => '/images/img_speaker01.avif', 'position' => 'POLICY', 'session' => 'SESSION 1', 'name' => 'MR. Luca Rossi', 'organisation' => 'Green Growth Network, Italy'],
-    ];
-@endphp
+@props(['speakers'])
 
+@if ($speakers->isNotEmpty())
 <section class="mcon main_speakers">
     <div class="inner">
         <div class="mtit">
@@ -19,14 +11,28 @@
             <div class="swiper speaker_swiper">
                 <div class="swiper-wrapper">
                     @foreach($speakers as $speaker)
+                        @php
+                            $profileImage = $speaker->is_image_visible && $speaker->profile_image
+                                ? (str_starts_with($speaker->profile_image, '/') ? asset(ltrim($speaker->profile_image, '/')) : asset('storage/'.$speaker->profile_image))
+                                : null;
+                            $roleLabel = \App\Models\Speaker::roleOptions()[$speaker->role] ?? strtoupper((string) $speaker->role);
+                        @endphp
                         <div class="swiper-slide">
                             <a href="{{ route('programme.speakers') }}" class="box">
-                                <div class="photo imgfit" aria-hidden="true"><img src="{{ $speaker['image'] }}" alt=""></div>
-                                <div class="info">{{ $speaker['position'] }}</div>
+                                <div class="photo imgfit">
+                                    @if ($profileImage)
+                                        <img src="{{ $profileImage }}" alt="{{ $speaker->full_name }}">
+                                    @endif
+                                </div>
+                                <div class="info">{{ $roleLabel }}</div>
                                 <div class="btm">
-                                    <div class="session">{{ $speaker['session'] }}</div>
-                                    <div class="name">{{ $speaker['name'] }}</div>
-                                    <p>{{ $speaker['organisation'] }}</p>
+                                    @if ($speaker->presentation_subject)
+                                        <div class="session">{{ $speaker->presentation_subject }}</div>
+                                    @endif
+                                    <div class="name">{{ $speaker->full_name }}</div>
+                                    @if ($speaker->position || $speaker->affiliation)
+                                        <p>{{ collect([$speaker->position, $speaker->affiliation])->filter()->implode(' · ') }}</p>
+                                    @endif
                                 </div>
                             </a>
                         </div>
@@ -46,7 +52,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     new Swiper('.speaker_swiper', {
-        loop: true,
+        loop: {{ $speakers->count() > 1 ? 'true' : 'false' }},
         spaceBetween: 10,
         slidesPerView: 'auto',
         observer: true,
@@ -71,3 +77,4 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 </script>
 @endpush
+@endif

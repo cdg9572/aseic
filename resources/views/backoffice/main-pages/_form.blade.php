@@ -61,7 +61,6 @@
                 @error('folder_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
         </div>
-
         <div class="bo-form-row">
             <label for="event_name" class="bo-form-label">행사명 <span class="required">*</span></label>
             <div class="bo-form-field">

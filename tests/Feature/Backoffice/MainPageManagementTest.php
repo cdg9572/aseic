@@ -99,6 +99,18 @@ class MainPageManagementTest extends TestCase
         $this->assertFileExists($templatePath.'/programme/index.blade.php');
         $this->assertFileExists($templatePath.'/archive/legacy.blade.php');
         $this->assertFileExists($templatePath.'/registration/index.blade.php');
+        $this->assertFileExists($templatePath.'/registration/register.blade.php');
+        $this->assertFileExists($templatePath.'/registration/confirm.blade.php');
+        $this->assertFileExists($templatePath.'/media/gallery.blade.php');
+        $this->assertFileExists($templatePath.'/media/news.blade.php');
+        $this->assertFileExists($templatePath.'/media/news-view.blade.php');
+        $this->assertFileExists($templatePath.'/media/youtube.blade.php');
+        $this->assertFileExists($templatePath.'/announcements/index.blade.php');
+        $this->assertFileExists($templatePath.'/announcements/view.blade.php');
+
+        $this->get(route('home', ['mainPage' => $mainPage->folder_name]))
+            ->assertOk()
+            ->assertViewIs('forums.'.$folder.'.main');
 
         $this->actingAs($this->admin)
             ->get('/backoffice/main-pages/'.$mainPage->id.'/edit')
@@ -134,6 +146,32 @@ class MainPageManagementTest extends TestCase
 
         $invalidResponse->assertSessionHasErrors('folder_name');
         $this->assertSame($folder, $mainPage->fresh()->folder_name);
+    }
+
+    public function test_admin_can_open_visible_main_page_from_its_folder_name_link(): void
+    {
+        $folder = $this->newFolderName();
+        $mainPage = MainPage::factory()->create([
+            'folder_name' => $folder,
+            'is_visible' => true,
+        ]);
+        $frontendUrl = route('home', ['mainPage' => $folder]);
+        $returnUrl = route('backoffice.main-pages.index').'?keyword=visible';
+
+        $this->actingAs($this->admin)
+            ->get('/backoffice/main-pages')
+            ->assertOk()
+            ->assertSee($frontendUrl, false);
+
+        $this->actingAs($this->admin)
+            ->get('/backoffice/main-pages/'.$mainPage->id.'/edit?'.http_build_query(['return_url' => $returnUrl]))
+            ->assertOk()
+            ->assertDontSee('사용자 페이지 주소')
+            ->assertSeeInOrder(['목록으로', '사용자 페이지'])
+            ->assertSee('class="board-buttons"', false)
+            ->assertSee('href="'.$returnUrl.'"', false)
+            ->assertSee('href="'.$frontendUrl.'"', false)
+            ->assertSee('target="_blank"', false);
     }
 
     public function test_admin_can_filter_and_bulk_delete_main_pages_without_removing_template_folder(): void
@@ -178,6 +216,17 @@ class MainPageManagementTest extends TestCase
     {
         $invalidResponse = $this->actingAs($this->admin)->post('/backoffice/main-pages', $this->payload('한글 2026'));
         $invalidResponse->assertSessionHasErrors('folder_name');
+
+        foreach (['default', 'publishing-original', 'forums', 'backoffice', 'auth', 'popup', 'css', 'images', 'js', 'storage'] as $reservedFolder) {
+            $existingCount = MainPage::query()->where('folder_name', $reservedFolder)->count();
+            $reservedResponse = $this->actingAs($this->admin)
+                ->post('/backoffice/main-pages', $this->payload($reservedFolder));
+            $reservedResponse->assertSessionHasErrors('folder_name');
+            $this->assertSame(
+                $existingCount,
+                MainPage::query()->where('folder_name', $reservedFolder)->count(),
+            );
+        }
 
         $folder = $this->newFolderName();
         File::makeDirectory(resource_path('views/forums/'.$folder), 0755, true);

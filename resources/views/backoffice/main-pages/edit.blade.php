@@ -20,9 +20,16 @@
 
 <div class="board-container">
     <div class="board-header">
-        <a href="{{ request('return_url', route('backoffice.main-pages.index')) }}" class="btn btn-secondary btn-sm">
-            <i class="fas fa-arrow-left"></i> 목록으로
-        </a>
+        <div class="board-buttons">
+            <a href="{{ $returnUrl }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> 목록으로
+            </a>
+            @if ($mainPage->is_visible)
+                <a href="{{ route('home', ['mainPage' => $mainPage->folder_name]) }}" target="_blank" rel="noopener" class="btn btn-success btn-sm">
+                    <i class="fas fa-external-link-alt"></i> 사용자 페이지
+                </a>
+            @endif
+        </div>
     </div>
 
     <div class="board-card">
@@ -30,13 +37,11 @@
             <form action="{{ route('backoffice.main-pages.update', $mainPage) }}" method="POST" enctype="multipart/form-data" id="mainPageForm" class="bo-compact-form bo-main-page-form">
                 @csrf
                 @method('PUT')
-                @if (request('return_url'))
-                    <input type="hidden" name="return_url" value="{{ request('return_url') }}">
-                @endif
+                <input type="hidden" name="return_url" value="{{ $returnUrl }}">
                 @include('backoffice.main-pages._form')
                 <div class="board-form-actions">
                     <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 저장</button>
-                    <a href="{{ request('return_url', route('backoffice.main-pages.index')) }}" class="btn btn-secondary">취소</a>
+                    <a href="{{ $returnUrl }}" class="btn btn-secondary">취소</a>
                 </div>
             </form>
         </div>

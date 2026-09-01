@@ -31,6 +31,8 @@
                     <form action="{{ route('backoffice.banners.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
+                        @include('backoffice.homepage-assets._main_page_select', ['assetLabel' => '배너'])
+
                         <!-- 1. 배너제목 -->
                         <div class="board-form-group">
                             <label for="title" class="board-form-label">배너제목 <span class="required">*</span></label>

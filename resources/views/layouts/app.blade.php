@@ -363,7 +363,7 @@
 		</div>
 		<div class="inner flex justify-between flex-wrap">
 			<div class="info flex colm">
-				<strong>2026 Global Eco-Innovation Forum</strong>
+				<strong>{{ ($mainPage ?? null)?->footer_text ?: (($mainPage ?? null)?->event_name ?: '2026 Global Eco-Innovation Forum') }}</strong>
 				<p class="copy">Copyright © ASEM SMEs Eco-Innovation Center. All Rights Reserved.</p>
 			</div>
 			<ul class="links flex">

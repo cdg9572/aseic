@@ -19,6 +19,8 @@ use Throwable;
 
 class MainPageService
 {
+    public function __construct(private readonly MainPageAssetService $mainPageAssetService) {}
+
     /**
      * @param  array<string, mixed>  $filters
      */
@@ -109,6 +111,7 @@ class MainPageService
                 &$createdTemplatePath,
             ): MainPage {
                 $mainPage = MainPage::query()->create($data);
+                $this->mainPageAssetService->normalizeSelections($mainPage);
                 $this->syncSpeakers($mainPage, $speakerIds);
                 $this->syncLinks($mainPage, $links);
                 $createdTemplatePath = $this->createFrontendTemplateFolder($mainPage->folder_name);
@@ -152,6 +155,7 @@ class MainPageService
 
             DB::transaction(function () use ($mainPage, $data, $speakerIds, $links): void {
                 $mainPage->update($data);
+                $this->mainPageAssetService->normalizeSelections($mainPage);
                 $this->syncSpeakers($mainPage, $speakerIds);
                 $this->syncLinks($mainPage, $links);
             });

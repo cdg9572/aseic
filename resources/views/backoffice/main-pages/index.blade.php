@@ -103,7 +103,15 @@
                             <tr>
                                 <td><input type="checkbox" value="{{ $mainPage->id }}" class="form-check-input bo-row-checkbox"></td>
                                 <td>{{ $mainPages->total() - ($mainPages->currentPage() - 1) * $mainPages->perPage() - $index }}</td>
-                                <td>{{ $mainPage->folder_name }}</td>
+                                <td>
+                                    @if ($mainPage->is_visible)
+                                        <a href="{{ route('home', ['mainPage' => $mainPage->folder_name]) }}" target="_blank" rel="noopener">
+                                            {{ $mainPage->folder_name }}
+                                        </a>
+                                    @else
+                                        {{ $mainPage->folder_name }}
+                                    @endif
+                                </td>
                                 <td>{{ $mainPage->event_name }}</td>
                                 <td>
                                     @if ($mainPage->use_custom_event_date)

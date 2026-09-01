@@ -81,7 +81,11 @@
 	.main_speakers .navi .speaker-pagination .swiper-pagination-bullet {width:40px; height:4px; background:#4B4F54; border-radius:0; margin:0; opacity:.1; transition:.2s linear;}
 	.main_speakers .navi .speaker-pagination .swiper-pagination-bullet-active {opacity:1;}
 /* PROGRAMME */
-	.main_programme {background:#F2F7FC url('/images/bg_logo.svg') no-repeat left bottom 67px;}
+	.main_programme {position:relative; overflow:hidden; background:#F2F7FC url('/images/bg_logo.svg') no-repeat left bottom 67px;}
+	.main-section-background {position:absolute; inset:0; z-index:0;}
+	.main-section-background img {width:100%; height:100%; object-fit:cover;}
+	.main_programme .inner,
+	.main_register .inner {position:relative; z-index:1;}
 	.main_programme .inner {gap:120px;}
 	.main_programme .mtit {width:480px; display:flex; flex-direction:column; align-items:flex-start; gap:48px; margin:0;}
 	.main_programme .mtit a {position:relative;}
@@ -92,7 +96,8 @@
 	.main_programme .timetable .cont strong {display:block; font-size:24px; color:#191F28; font-weight:600; line-height:1.5;}
 	.main_programme .timetable .cont p {font-size:18px; color:#191F28; line-height:1.65; margin-top:2px;}
 /* REGISTER */
-	.main_register {background:linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), url('/images/bg_gra.avif') lightgray 0px -0.302px / 100% 292.459% no-repeat;}
+	.main_register {position:relative; overflow:hidden; background:linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), url('/images/bg_gra.avif') lightgray 0px -0.302px / 100% 292.459% no-repeat;}
+	.main_register .main-section-background:after {content:""; position:absolute; inset:0; background:rgba(0, 0, 0, 0.20);}
 	.main_register .flex {position:relative; flex-direction:column;}
 	.main_register .mtit {color:#fff; margin-bottom:24px;}
 	.main_register p {font-size:20px; color:#fff; line-height:1.6;}
@@ -111,6 +116,7 @@
 	.main_board .video_box a,
 	.main_board .video_box img,
 	.main_board .video_box iframe {display:block; width:100%; height:416px; object-fit:cover;}
+	.main_board .box.main-board-full {width:100%;}
 
 /* ------------------------------ PC Guide ------------------------------ */
 @media screen and (max-width:1640px){
