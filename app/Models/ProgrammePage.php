@@ -31,6 +31,7 @@ class ProgrammePage extends Model
 
     protected $fillable = [
         'type',
+        'category_id',
         'page_title',
         'subtitle',
         'title',
@@ -59,6 +60,11 @@ class ProgrammePage extends Model
     public function mainPageLink(): MorphOne
     {
         return $this->morphOne(MainPageLink::class, 'linkable');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function creator(): BelongsTo

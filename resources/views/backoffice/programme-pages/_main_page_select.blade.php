@@ -1,3 +1,21 @@
+@php($programmePage = $programmePage ?? null)
+
+@if(isset($context['category_group_code']))
+<div class="bo-form-row">
+    <label for="category_id" class="bo-form-label">탭 선택 <span class="required">*</span></label>
+    <div class="bo-form-field">
+        <select class="board-form-control @error('category_id') is-invalid @enderror" id="category_id" name="category_id" required>
+            <option value="">선택해주세요.</option>
+            @foreach($categories as $category)
+                <option value="{{ $category->id }}" @selected((string) old('category_id', $selectedCategoryId ?? $programmePage?->category_id) === (string) $category->id)>{{ $category->name }}</option>
+            @endforeach
+        </select>
+        @if($categories->isEmpty())<small class="bo-password-help">탭 관리의 {{ $context['category_group_name'] }} 그룹에 1차 메뉴를 먼저 등록해주세요.</small>@endif
+        @error('category_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+</div>
+@endif
+
 <div class="bo-form-row">
     <label for="main_page_id" class="bo-form-label">Main Page 연결</label>
     <div class="bo-form-field">

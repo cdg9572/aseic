@@ -55,6 +55,7 @@ class MainPageManagementTest extends TestCase
             ->assertOk()
             ->assertSee('연도(폴더명)')
             ->assertSee('Programme')
+            ->assertDontSee('메인 썸네일')
             ->assertSee('About the Forum')
             ->assertSee('Registration');
 
@@ -217,7 +218,7 @@ class MainPageManagementTest extends TestCase
         $invalidResponse = $this->actingAs($this->admin)->post('/backoffice/main-pages', $this->payload('한글 2026'));
         $invalidResponse->assertSessionHasErrors('folder_name');
 
-        foreach (['default', 'publishing-original', 'forums', 'backoffice', 'auth', 'popup', 'css', 'images', 'js', 'storage'] as $reservedFolder) {
+        foreach (['default', 'publishing-original', 'publishing-original-assets', 'forums', 'backoffice', 'auth', 'popup', 'css', 'images', 'js', 'storage'] as $reservedFolder) {
             $existingCount = MainPage::query()->where('folder_name', $reservedFolder)->count();
             $reservedResponse = $this->actingAs($this->admin)
                 ->post('/backoffice/main-pages', $this->payload($reservedFolder));

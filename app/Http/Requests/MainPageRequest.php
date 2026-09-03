@@ -35,6 +35,7 @@ class MainPageRequest extends FormRequest
         $reservedFolderNames = [
             'default',
             'publishing-original',
+            'publishing-original-assets',
             'forums',
             'backoffice',
             'auth',

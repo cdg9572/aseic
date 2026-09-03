@@ -6,6 +6,16 @@
 @endsection
 
 @section('content')
+@if($programmePage ?? null)
+<div class="inner">
+	<section class="program_list" aria-labelledby="programme-content-heading">
+		<h2 id="programme-content-heading" class="sound_only">Programme Schedule</h2>
+		@if(filled(strip_tags((string) $programmePage->content)))
+		<div class="programme-admin-content">{!! $programmePage->content !!}</div>
+		@endif
+	</section>
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="program_list tabs_area">
 		<ul class="tabs" role="tablist" aria-label="Programme Schedule">
@@ -304,9 +314,12 @@
 		</div>
 	</section>
 </div>
+@endif
 @endsection
 
+@if(!($programmePage ?? null) && ($mainPage?->folder_name ?? null) === 'publishing-original')
 @push('scripts')
 <script src="/js/script_tab.js"></script>
 <script src="/js/script_accordion.js"></script>
 @endpush
+@endif

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Backoffice\PopupController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PublishingOriginalAssetController;
 use App\Http\Controllers\PublishingPreviewController;
 use App\Http\Controllers\SubController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,10 @@ Route::get('/', [HomeController::class, 'redirectToVisibleForum'])->name('root')
 Route::get('/popup/{popup}', [PopupController::class, 'showPopup'])->name('popup.show');
 
 // 퍼블리싱 원본을 고정 주소에서 확인합니다.
+Route::get('/publishing-original-assets/{path}', PublishingOriginalAssetController::class)
+    ->where('path', '.*')
+    ->name('publishing-original.asset');
+
 Route::get('/{previewMode}/{previewPath?}', PublishingPreviewController::class)
     ->where('previewMode', 'publishing-original')
     ->where('previewPath', '.*')
@@ -89,18 +94,20 @@ Route::prefix('{mainPage:folder_name}')->scopeBindings()->group(function () {
     Route::prefix('media')->name('media.')->group(function () {
         Route::get('/gallery', [SubController::class, 'mediaGallery'])->name('gallery');
         Route::get('/news', [SubController::class, 'mediaNews'])->name('news');
-        Route::get('/news/view', [SubController::class, 'mediaNewsView'])->name('news.view');
+        Route::get('/news/view/{mediaContent?}', [SubController::class, 'mediaNewsView'])->name('news.view');
         Route::get('/youtube', [SubController::class, 'mediaYoutube'])->name('youtube');
     });
 
     Route::prefix('registration')->name('registration.')->group(function () {
         Route::get('/', [SubController::class, 'registrationIndex'])->name('index');
         Route::get('/register', [SubController::class, 'registrationRegister'])->name('register');
+        Route::post('/register', [SubController::class, 'registrationSubmit'])->middleware('throttle:10,1')->name('submit');
         Route::get('/confirm', [SubController::class, 'registrationConfirm'])->name('confirm');
+        Route::post('/confirm', [SubController::class, 'registrationConfirmLookup'])->middleware('throttle:10,1')->name('confirm.lookup');
     });
 
     Route::prefix('announcements')->name('announcements.')->group(function () {
         Route::get('/', [SubController::class, 'announcementsIndex'])->name('index');
-        Route::get('/view', [SubController::class, 'announcementsView'])->name('view');
+        Route::get('/view/{announcement?}', [SubController::class, 'announcementsView'])->name('view');
     });
 });

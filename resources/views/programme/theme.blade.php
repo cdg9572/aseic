@@ -6,6 +6,40 @@
 
 @section('content')
 
+@if($programmePage ?? null)
+<!-- 관리자 Theme 연동 -->
+<section class="theme_info_area" aria-labelledby="programme-theme-overview-heading">
+	<div class="inner">
+		<h2 id="programme-theme-overview-heading" class="sound_only">Programme Theme Overview</h2>
+		<div class="infobox">
+			<p class="forum_subtitle">{{ $mainPage->event_name }}</p>
+			@if(filled(strip_tags((string) $programmePage->title)))
+			<div class="tit">{!! $programmePage->title !!}</div>
+			@endif
+			@if(filled($programmePage->event_date) || filled($programmePage->location))
+			<ul class="info_list">
+				@if(filled($programmePage->event_date))
+				<li class="i1"><span class="sound_only">Date and Time: </span>{{ $programmePage->event_date }}</li>
+				@endif
+				@if(filled($programmePage->location))
+				<li class="i2"><span class="sound_only">Venue: </span>{{ $programmePage->location }}</li>
+				@endif
+			</ul>
+			@endif
+		</div>
+	</div>
+</section>
+
+@if(filled(strip_tags((string) $programmePage->content)))
+<section class="theme_detail_area" aria-labelledby="theme-details-heading">
+	<div class="inner">
+		<h2 id="theme-details-heading" class="sound_only">Programme Details</h2>
+		<div class="wbox">{!! $programmePage->content !!}</div>
+	</div>
+</section>
+@endif
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
+
 <!-- 포럼 핵심 정보 (Hero Section) -->
 <section class="theme_info_area" aria-labelledby="programme-theme-overview-heading">
 	<div class="inner">
@@ -40,5 +74,7 @@
 		</div>
 	</div>
 </section>
+
+@endif
 
 @endsection

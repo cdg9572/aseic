@@ -5,6 +5,48 @@
 @endsection
 
 @section('content')
+@if(($registrationPage ?? null) && $registrationOpen)
+<div class="inner">
+	<section class="register_now">
+		<h2 class="stit mb0">Register Now</h2>
+		<form action="{{ route('registration.submit') }}" method="POST" id="form-registration">
+			@csrf
+			<div class="scon">
+				<p class="tb">Please ensure that your name, affiliation, and title/position are entered accurately, as they will appear on your name badge.</p>
+				<div class="excl tar c_iden">Fields marked with * are required.</div>
+				<div class="tbl">
+					<table><tbody>
+						<tr><th><label for="reg-first-name">First Name <span class="c_iden">*</span></label></th><td><input type="text" id="reg-first-name" name="first_name" value="{{ old('first_name') }}" class="text wlong" required>@error('first_name')<p class="excl c_iden">{{ $message }}</p>@enderror</td></tr>
+						<tr><th><label for="reg-last-name">Last Name <span class="c_iden">*</span></label></th><td><input type="text" id="reg-last-name" name="last_name" value="{{ old('last_name') }}" class="text wlong" required>@error('last_name')<p class="excl c_iden">{{ $message }}</p>@enderror</td></tr>
+						<tr><th><label for="reg-affiliation">Affiliation <span class="c_iden">*</span></label></th><td><input type="text" id="reg-affiliation" name="affiliation" value="{{ old('affiliation') }}" class="text wlong" required>@error('affiliation')<p class="excl c_iden">{{ $message }}</p>@enderror</td></tr>
+						<tr><th><label for="reg-position">Job Title / Position <span class="c_iden">*</span></label></th><td><input type="text" id="reg-position" name="position" value="{{ old('position') }}" class="text wlong" required>@error('position')<p class="excl c_iden">{{ $message }}</p>@enderror</td></tr>
+						<tr><th><label for="reg-mobile">Mobile Number <span class="c_iden">*</span></label></th><td><input type="tel" id="reg-mobile" name="mobile" value="{{ old('mobile') }}" class="text wlong" placeholder="e.g. +82 10-1234-5678" required><p class="excl c_iden">* Please include your country code.</p>@error('mobile')<p class="excl c_iden">{{ $message }}</p>@enderror</td></tr>
+						<tr><th><label for="reg-email">E-mail <span class="c_iden">*</span></label></th><td><input type="email" id="reg-email" name="email" value="{{ old('email') }}" class="text wlong" required>@error('email')<p class="excl c_iden">{{ $message }}</p>@enderror</td></tr>
+						<tr>
+							<th>Attendance Mode <span class="c_iden">*</span></th>
+							<td><div class="flex radio_group">
+								<label class="radio"><input type="radio" name="attendance_mode" class="sound_only" value="offline" @checked(old('attendance_mode', 'offline') === 'offline')><i></i><span>In-person</span></label>
+								<label class="radio"><input type="radio" name="attendance_mode" class="sound_only" value="online" @checked(old('attendance_mode') === 'online')><i></i><span>Online</span></label>
+							</div>@error('attendance_mode')<p class="excl c_iden">{{ $message }}</p>@enderror</td>
+						</tr>
+					</tbody></table>
+				</div>
+
+				<div class="rtit">Privacy Policy and Consent to Collection and Use of Personal Information <span class="c_iden">*</span></div>
+				<div class="tbl tarms_area">
+					<div class="textarea" tabindex="0">@include('terms.txt_privacy-policy', ['privacyEventName' => $mainPage->event_name, 'includeSessionAttendance' => false])</div>
+					<label class="check"><input type="checkbox" name="privacy_agree" id="privacy_agree" class="sound_only" value="1" @checked(old('privacy_agree')) required><i></i><span>I agree to the collection and use of personal information.</span></label>
+					@error('privacy_agree')<p class="excl c_iden">{{ $message }}</p>@enderror
+				</div>
+			</div>
+			<div class="flex_center btns_btm mt80">
+				<a href="{{ route('registration.index') }}" class="btn btn_kwg">Cancel</a>
+				<button type="submit" class="btn btn_wbb">Submit Registration</button>
+			</div>
+		</form>
+	</section>
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="register_now">
 		<h2 class="stit mb0">Register Now</h2>
@@ -111,8 +153,14 @@
 		</form>
 	</section>
 </div>
+@endif
 @endsection
 
+@if($registrationPage ?? null)
+@push('scripts')
+<script src="/js/registration.js"></script>
+@endpush
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -150,3 +198,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endpush
+@endif

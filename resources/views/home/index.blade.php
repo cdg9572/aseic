@@ -14,6 +14,8 @@
     $registerBackground = $mainPage->register_background_path
         ? (str_starts_with($mainPage->register_background_path, '/') ? asset(ltrim($mainPage->register_background_path, '/')) : asset('storage/'.$mainPage->register_background_path))
         : null;
+    $pastForumVideoThumbnail = $mainPage->past_forum_video_thumbnail_url;
+    $hasPastForumVideo = filled($mainPage->past_forum_video_url) && filled($pastForumVideoThumbnail);
 @endphp
 <h1 class="sound_only">ASEIC 메인 페이지</h1>
 
@@ -57,7 +59,7 @@
 
 <section class="mcon main_board">
 	<div class="flex inner">
-		<div @class(['box', 'main-board-full' => ! $mainPage->past_forum_video_url])>
+		<div @class(['box', 'main-board-full' => ! $hasPastForumVideo])>
 			<div class="mtit"><h2>ANNOUNCEMENTS</h2><a href="{{ route('announcements.index') }}" class="btn_link btn_bg_gra">More Info</a></div>
 			<ul class="list">
 				@foreach ($noticePosts as $noticePost)
@@ -65,11 +67,11 @@
 				@endforeach
 			</ul>
 		</div>
-		@if ($mainPage->past_forum_video_url)
+		@if ($hasPastForumVideo)
 		<div class="box">
 			<div class="mtit"><h2>PAST FORUM VIDEO</h2><a href="{{ route('media.youtube') }}" class="btn_link btn_bg_gra">More Info</a></div>
 			<div class="video_box">
-				<a href="{{ $mainPage->past_forum_video_url }}" target="_blank" rel="noopener"><img src="/images/img_sample_video.avif" alt="{{ $mainPage->event_name }} Past Forum Video"></a>
+				<a href="{{ $mainPage->past_forum_video_url }}" target="_blank" rel="noopener"><img src="{{ $pastForumVideoThumbnail }}" alt="{{ $mainPage->event_name }} Past Forum Video"></a>
 			</div>
 		</div>
 		@endif

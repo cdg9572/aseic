@@ -7,6 +7,34 @@
 @endsection
 
 @section('content')
+@if($announcementPost ?? null)
+<div class="inner">
+	<section class="board_view">
+		<article>
+			<div class="tit_area">
+				<h1 class="tit">{{ $announcementPost->title }}</h1>
+				<dl class="info"><div class="info_item"><dt>Date</dt><dd>{{ $announcementPost->created_at->format('Y.m.d') }}</dd></div><div class="info_item"><dt>Views</dt><dd>{{ $announcementPost->view_count }}</dd></div></dl>
+			</div>
+			@if(filled(strip_tags((string) $announcementPost->content)))<div class="cont">{!! $announcementPost->content !!}</div>@endif
+			@if($attachments !== [])
+			<div class="file_area" aria-label="Attached files">
+				@foreach($attachments as $attachment)
+				@if(is_array($attachment) && filled($attachment['path'] ?? null))
+				@php($attachmentUrl = str_starts_with($attachment['path'], '/') ? asset(ltrim($attachment['path'], '/')) : asset('storage/'.$attachment['path']))
+				<a href="{{ $attachmentUrl }}" download="{{ $attachment['name'] ?? basename($attachment['path']) }}"><strong>File</strong><p>{{ $attachment['name'] ?? basename($attachment['path']) }}</p></a>
+				@endif
+				@endforeach
+			</div>
+			@endif
+		</article>
+		<nav class="prev_next" aria-label="Post navigation">
+			@if($previousAnnouncement)<a href="{{ route('announcements.view', ['announcement' => $previousAnnouncement->id]) }}" class="prev"><strong>Previous</strong><p>{{ $previousAnnouncement->title }}</p></a>@else<a class="prev no_item"><strong>Previous</strong><p>No Previous Post</p></a>@endif
+			@if($nextAnnouncement)<a href="{{ route('announcements.view', ['announcement' => $nextAnnouncement->id]) }}" class="next"><strong>Next</strong><p>{{ $nextAnnouncement->title }}</p></a>@else<a class="next no_item"><strong>Next</strong><p>No Next Post</p></a>@endif
+		</nav>
+		<div class="board_bottom flex_center"><a href="{{ route('announcements.index') }}" class="btn btn_wbb">Back to List</a></div>
+	</section>
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="board_view">
 		<article>
@@ -50,4 +78,5 @@
 		</div>
 	</section>
 </div>
+@endif
 @endsection

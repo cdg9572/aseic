@@ -207,7 +207,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <small class="board-form-text">카테고리를 사용하려면 그룹을 선택하세요. 카테고리 관리 메뉴에서 등록된 그룹(depth=0)들이 표시됩니다.</small>
+                        <small class="board-form-text">카테고리를 사용하려면 그룹을 선택하세요. 탭 관리 메뉴에서 등록된 그룹(depth=0)들이 표시됩니다.</small>
                     </div>
 
                     <!-- 목록 및 권한 설정 -->
@@ -324,4 +324,3 @@
 @endunless
 @endsection
 @endsection
-

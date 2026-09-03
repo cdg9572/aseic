@@ -56,6 +56,10 @@
 	.address_area .info dt:before {content:""; position:absolute; top:50%; left:0; width:26px; aspect-ratio:1/1; border-radius:50%; background:no-repeat 50% 50% / contain; transform:translateY(-50%);}
 	.address_area .info p {font-size:20px; color:#333D4B; line-height:1.6;}
 	.address_area .info small {font-size:16px; color:#6B7684; line-height:1.65;}
+	.address_area .venue-description {font-size:16px; color:#6B7684; line-height:1.65; margin-top:8px;}
+	.address_area .venue-info-full {width:100%;}
+	.address_area iframe,
+	.tabs_area iframe {border:0;}
 	.address_area .info .i1 dt:before {background-image:url('/images/icon_venue01.svg');}
 	.address_area .info .i2 dt:before {background-image:url('/images/icon_venue02.svg');}
 	.address_area .info .i3 dt:before {background-image:url('/images/icon_venue03.svg');}

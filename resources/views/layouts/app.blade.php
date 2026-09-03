@@ -85,12 +85,15 @@
 
     @yield('meta_tags')
     @php
-		$pageTitle = $currentGNum === 'main' ? $jsonName : trim($__env->yieldContent('title'));
-		$ogTitle = $currentGNum === 'main' ? 'ASEIC' : 'ASEIC | ' . trim($__env->yieldContent('title'));
+		$managedPageTitle = trim(strip_tags((string) ($pageTitle ?? '')));
+		$documentTitle = $currentGNum === 'main'
+			? $jsonName
+			: ($managedPageTitle !== '' ? $managedPageTitle : $jsonName);
+		$ogTitle = $currentGNum === 'main' ? 'ASEIC' : $documentTitle;
 	@endphp
 
-	<title>{{ $pageTitle }}</title>
-	<meta name="title" content="{{ $pageTitle }}" />
+	<title>{{ $documentTitle }}</title>
+	<meta name="title" content="{{ $documentTitle }}" />
 	<meta name="subject" content="{{ $jsonName }}" />
 	<meta name="description" content="@yield('description', 'ASEM SMEs Eco Innovation Center')">
 	<meta name="author" content="ASEIC">
@@ -226,7 +229,7 @@
                 $asideMenus = $menus[$currentGNum]['sub'] ?? [];
             }
 
-            // tit_pagename 및 breadcrumb 2depth 영역에 표시할 현재 snb 1차 소메뉴 이름
+            // 화면 제목은 관리자 콘텐츠명이 아니라 고정 메뉴명을 사용한다.
             $displayPageTitle = $subData['name'] ?? $sName ?? $gName ?? ($menus[$currentGNum]['name'] ?? '');
         @endphp
 
@@ -245,6 +248,13 @@
                 @else
                     <h1 class="tit_pagename">{{ $displayPageTitle }}</h1>
                 @endif
+				@if(filled($pageSubtitle ?? null))
+					@if($pageSubtitle === strip_tags($pageSubtitle))
+						<p>{!! nl2br(e($pageSubtitle)) !!}</p>
+					@else
+						{!! $pageSubtitle !!}
+					@endif
+				@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 				@switch($currentGNum)
 					@case('01')
 						@switch($currentSNum)
@@ -267,6 +277,7 @@
 					@case('06')<p>Find the latest updates on the Forum, including event schedules, <br/>registration, and programme changes.<br/>Please review the announcements regularly to stay informed.</p>@break
 					@default
 				@endswitch
+				@endif
             </div>
 			@if(!empty($asideMenus))
 			<div class="aside g{{ $currentGNum }}">
@@ -335,7 +346,11 @@
 			<h3 id="modal-title-privacy" class="tit">Privacy policy</h3>
 			<button type="button" class="btn_close" aria-label="Close modal">&times;</button>
 			<div class="terms_text">
+				@if(($mainPage?->folder_name ?? null) === 'publishing-original')
 				@include('terms.txt_privacy-policy')
+				@else
+				@include('terms.txt_privacy-policy', ['privacyEventName' => $mainPage?->event_name, 'includeSessionAttendance' => false])
+				@endif
 			</div>
 		</div>
 	</div>

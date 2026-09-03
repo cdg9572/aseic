@@ -179,6 +179,6 @@ class MediaContentService
 
     private function usesCategories(string $type): bool
     {
-        return in_array($type, [MediaContent::TYPE_PHOTO_ITEM, MediaContent::TYPE_NEWS_ITEM], true);
+        return in_array($type, [MediaContent::TYPE_PHOTO_ITEM, MediaContent::TYPE_NEWS_ITEM, MediaContent::TYPE_YOUTUBE], true);
     }
 }

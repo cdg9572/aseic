@@ -21,7 +21,7 @@ class AdminMenuSeeder extends Seeder
             $this->menu(33, 31, '관리자 관리', '/backoffice/admins', null, 2, 'settings.admins'),
             $this->menu(34, 31, '권한그룹 관리', '/backoffice/admin-groups', null, 3, 'settings.admin-groups'),
             $this->menu(35, 31, '메뉴 관리', '/backoffice/admin-menus', null, 4, 'settings.admin-menus'),
-            $this->menu(42, 31, '코드 관리', '/backoffice/categories', null, 5, 'settings.categories'),
+            $this->menu(42, 31, '탭 관리', '/backoffice/categories', null, 5, 'settings.categories'),
 
             $this->menu(20, null, 'Homepage', null, 'fa-home', 3, 'homepage'),
             $this->menu(21, 20, 'Main Page', '/backoffice/main-pages', null, 1, 'homepage.main-page'),

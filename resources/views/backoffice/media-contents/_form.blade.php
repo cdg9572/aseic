@@ -3,16 +3,16 @@
 @endphp
 
 <div class="bo-form-section"><div class="bo-form-list">
-    @if (in_array($context['form'], ['folder', 'youtube'], true))
-        <div class="bo-form-row"><label for="page_title" class="bo-form-label">{{ $context['type'] === \App\Models\MediaContent::TYPE_PHOTO_FOLDER ? '제목' : '제목(폴더명)' }} <span class="required">*</span></label><div class="bo-form-field"><input type="text" class="board-form-control @error('page_title') is-invalid @enderror" id="page_title" name="page_title" value="{{ old('page_title', $mediaContent?->page_title) }}" maxlength="255" required>@error('page_title')<div class="invalid-feedback">{{ $message }}</div>@enderror</div></div>
+    @if (isset($context['category_group_code']))
+        <div class="bo-form-row"><label for="category_id" class="bo-form-label">{{ $context['category_label'] ?? '분류' }} <span class="required">*</span></label><div class="bo-form-field"><select class="board-form-control @error('category_id') is-invalid @enderror" id="category_id" name="category_id" required><option value="">선택해주세요</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string) old('category_id', request()->query('category_id', $mediaContent?->category_id)) === (string) $category->id)>{{ $category->name }}</option>@endforeach</select>@if($categories->isEmpty())<small class="bo-password-help">탭 관리의 {{ $context['category_group_name'] }} 그룹에 1차 메뉴를 먼저 등록해주세요.</small>@endif @error('category_id')<div class="invalid-feedback">{{ $message }}</div>@enderror</div></div>
+    @endif
+
+    @if ($context['form'] === 'folder')
+        <div class="bo-form-row"><label for="page_title" class="bo-form-label">제목 <span class="required">*</span></label><div class="bo-form-field"><input type="text" class="board-form-control @error('page_title') is-invalid @enderror" id="page_title" name="page_title" value="{{ old('page_title', $mediaContent?->page_title) }}" maxlength="255" required>@error('page_title')<div class="invalid-feedback">{{ $message }}</div>@enderror</div></div>
     @endif
 
     @if (in_array($context['form'], ['folder', 'youtube'], true))
         <div class="bo-form-row"><label for="subtitle" class="bo-form-label">Sub Title</label><div class="bo-form-field"><textarea class="board-form-control board-form-textarea @error('subtitle') is-invalid @enderror" id="subtitle" name="subtitle" rows="10" data-backoffice-ckeditor data-source-editing="true">{{ old('subtitle', $mediaContent?->subtitle) }}</textarea>@error('subtitle')<div class="invalid-feedback">{{ $message }}</div>@enderror</div></div>
-    @endif
-
-    @if (isset($context['category_group_code']))
-        <div class="bo-form-row"><label for="category_id" class="bo-form-label">분류 <span class="required">*</span></label><div class="bo-form-field"><select class="board-form-control @error('category_id') is-invalid @enderror" id="category_id" name="category_id" required><option value="">분류를 선택해주세요</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string) old('category_id', request()->query('category_id', $mediaContent?->category_id)) === (string) $category->id)>{{ $category->name }}</option>@endforeach</select>@if($categories->isEmpty())<small class="bo-password-help">코드 관리의 {{ $context['category_group_name'] }} 그룹에 1차 메뉴를 먼저 등록해주세요.</small>@endif @error('category_id')<div class="invalid-feedback">{{ $message }}</div>@enderror</div></div>
     @endif
 
     @if (in_array($context['form'], ['photo', 'news', 'youtube'], true))

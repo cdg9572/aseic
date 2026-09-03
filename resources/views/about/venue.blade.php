@@ -5,6 +5,71 @@
 @endsection
 
 @section('content')
+@if($aboutPage ?? null)
+@php
+	$detail = $aboutPage->venueDetail;
+	$fullAddress = collect([$detail?->address, $detail?->address_detail])->filter(fn ($value) => filled($value))->implode(' ');
+	$mapUrl = $fullAddress !== '' ? 'https://maps.google.com/maps?q='.rawurlencode($fullAddress).'&t=&z=16&ie=UTF8&iwloc=&output=embed' : null;
+	$formatLabel = \App\Models\AboutVenueDetail::formatOptions()[$detail?->format] ?? $detail?->format;
+	$transportOptions = collect([
+		['key' => 'bus', 'label' => 'BUS', 'content' => $detail?->bus_content],
+		['key' => 'subway', 'label' => 'SUBWAY', 'content' => $detail?->subway_content],
+		['key' => 'taxi', 'label' => 'TAXI', 'content' => $detail?->taxi_content],
+	])->filter(fn ($option) => filled(strip_tags((string) $option['content'])))->values();
+@endphp
+<div class="inner">
+	<section class="scon venue_area" aria-labelledby="Venue-heading">
+		<h2 id="Venue-heading" class="sound_only">Venue</h2>
+
+		<div class="address_area">
+			@if($mapUrl)
+			<div class="map">
+				<iframe src="{{ $mapUrl }}" width="100%" height="100%" allowfullscreen="" loading="eager" referrerpolicy="no-referrer-when-downgrade" title="Map of {{ $detail?->venue_name ?: $fullAddress }}"></iframe>
+			</div>
+			@endif
+			<div @class(['txt', 'venue-info-full' => ! $mapUrl])>
+				<p class="name">{{ $mainPage->event_name }}</p>
+				<dl class="info">
+					@if(filled($detail?->venue_name) || $fullAddress !== '' || filled(strip_tags((string) $detail?->venue_description)))
+					<div class="i1">
+						<dt>Venue</dt>
+						<dd>
+							@if(filled($detail?->venue_name))<p>{{ $detail->venue_name }}</p>@endif
+							@if($fullAddress !== '')<small>{{ $fullAddress }}</small>@endif
+							@if(filled(strip_tags((string) $detail?->venue_description)))<div class="venue-description">{!! $detail->venue_description !!}</div>@endif
+						</dd>
+					</div>
+					@endif
+					@if(filled($detail?->event_date))
+					<div class="i2"><dt>Date</dt><dd>{{ $detail->event_date }}</dd></div>
+					@endif
+					@if(filled($formatLabel))
+					<div class="i3"><dt>Format</dt><dd>{{ $formatLabel }}</dd></div>
+					@endif
+				</dl>
+			</div>
+		</div>
+
+		@if($transportOptions->isNotEmpty())
+		<div class="tabs_area">
+			<ul class="tabs" role="tablist" aria-label="Transportation Options">
+				@foreach($transportOptions as $option)
+				<li role="presentation"><button type="button" role="tab" id="tab-{{ $option['key'] }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" aria-controls="panel-{{ $option['key'] }}" @if(!$loop->first) tabindex="-1" @endif>{{ $option['label'] }}</button></li>
+				@endforeach
+			</ul>
+			<div class="cont">
+				@foreach($transportOptions as $option)
+				<div id="panel-{{ $option['key'] }}" class="con" role="tabpanel" aria-labelledby="tab-{{ $option['key'] }}" @if(!$loop->first) hidden @endif>
+					<div class="txt">{!! $option['content'] !!}</div>
+					@if($mapUrl)<div class="map_area"><iframe data-src="{{ $mapUrl }}" width="100%" height="100%" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map of {{ $detail?->venue_name ?: $fullAddress }}"></iframe></div>@endif
+				</div>
+				@endforeach
+			</div>
+		</div>
+		@endif
+	</section>
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="scon venue_area" aria-labelledby="Venue-heading">
 		<h2 id="Venue-heading" class="sound_only">Venue</h2>
@@ -84,6 +149,7 @@
 		</div>
 	</section>
 </div>
+@endif
 @endsection
 
 @push('scripts')

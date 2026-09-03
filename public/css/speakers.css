@@ -10,6 +10,7 @@
 	.steering_committee_area .type {font-size:14px; font-weight:500; line-height:26px; padding:0 8px; border-radius:4px; border:1px solid; margin-bottom:16px;}
 	.steering_committee_area .type.type-speaker {color:#3578B8; background:#E8F2FC; border-color:#3578B84D;}
 	.steering_committee_area .type.type-moderator {color:#3B9B7A; background:#E8F8F3; border-color:#3B9B7A4D;}
+	.steering_committee_area .type.type-panel,
 	.steering_committee_area .type.type-panelist {color:#7565A8; background:#F0EEFA; border-color:#7565A84D;}
 	.steering_committee_area .type.type-start-up {color:#B87924; background:#FFF4E5; border-color:#B879244D;}
 	.steering_committee_area .name {font-size:24px; color:#191F28; font-weight:700; padding-bottom:12px; border-bottom:#0061C7 1px solid; margin-bottom:12px; width:100%;}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Category;
 use App\Models\ProgrammePage;
 use App\Models\ProgrammePageBook;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,6 +39,14 @@ class ProgrammePageRequest extends FormRequest
             'subtitle' => ['nullable', 'string'],
             'return_url' => ['nullable', 'url'],
         ];
+        $categoryGroupCode = match ($type) {
+            ProgrammePage::TYPE_ARCHIVE_THEME => Category::GROUP_CODE_ARCHIVE_THEME,
+            ProgrammePage::TYPE_ARCHIVE_PROGRAMME => Category::GROUP_CODE_ARCHIVE_PROGRAMME,
+            default => null,
+        };
+        if ($categoryGroupCode !== null) {
+            $rules['category_id'] = $this->categoryRules($categoryGroupCode);
+        }
 
         if (in_array($type, [
             ProgrammePage::TYPE_THEME,
@@ -152,6 +161,8 @@ class ProgrammePageRequest extends FormRequest
     {
         return [
             'page_title.required' => '제목을 입력해주세요.',
+            'category_id.required' => '분류를 선택해주세요.',
+            'category_id.exists' => '사용할 수 없는 분류입니다.',
             'sessions.size' => 'DAY 1과 DAY 2 세션 정보를 모두 전달해야 합니다.',
             'sessions.*.speaker_ids.*.distinct' => '동일한 Speaker는 중복 선택할 수 없습니다.',
             'sessions.*.speaker_ids.*.exists' => '선택한 Speaker를 찾을 수 없습니다.',
@@ -160,6 +171,26 @@ class ProgrammePageRequest extends FormRequest
             'books.*.file.mimes' => 'Programme Book은 PDF, DOC, DOCX, PPT, PPTX, HWP, ZIP 파일만 등록할 수 있습니다.',
             'books.*.file.max' => 'Programme Book 파일은 20MB 이하만 등록할 수 있습니다.',
             'books.*.link.url' => 'Link는 올바른 URL 형식으로 입력해주세요.',
+        ];
+    }
+
+    /** @return array<int, mixed> */
+    private function categoryRules(string $groupCode): array
+    {
+        $groupId = Category::query()
+            ->where('code', $groupCode)
+            ->where('depth', 0)
+            ->whereNull('parent_id')
+            ->value('id');
+
+        return [
+            'required',
+            'integer',
+            Rule::exists('categories', 'id')->where(function ($query) use ($groupId): void {
+                $query->where('parent_id', $groupId ?? 0)
+                    ->where('depth', 1)
+                    ->where('is_active', true);
+            }),
         ];
     }
 }

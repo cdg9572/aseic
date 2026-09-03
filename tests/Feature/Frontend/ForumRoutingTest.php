@@ -194,7 +194,7 @@ class ForumRoutingTest extends TestCase
                 ['time' => '', 'subject' => '', 'content' => ''],
             ],
             'register_background_path' => 'main-pages/register/register.jpg',
-            'past_forum_video_url' => 'https://www.youtube.com/watch?v=connected-forum',
+            'past_forum_video_url' => 'https://www.youtube.com/watch?v=AbCdEfGhI12',
             'host_images' => [['path' => 'main-pages/host/host.png', 'name' => 'Host Organization.png', 'size' => 100]],
             'organizer_images' => [['path' => 'main-pages/organizers/organizer.png', 'name' => 'Organizer.png', 'size' => 100]],
             'co_organizer_images' => [['path' => 'main-pages/co-organizers/co-organizer.png', 'name' => 'Co Organizer.png', 'size' => 100]],
@@ -231,7 +231,9 @@ class ForumRoutingTest extends TestCase
             ->assertSee('Connected opening content')
             ->assertSee('/storage/main-pages/programme/programme.jpg', false)
             ->assertSee('/storage/main-pages/register/register.jpg', false)
-            ->assertSee('https://www.youtube.com/watch?v=connected-forum', false)
+            ->assertSee('https://www.youtube.com/watch?v=AbCdEfGhI12', false)
+            ->assertSee('https://i.ytimg.com/vi/AbCdEfGhI12/maxresdefault.jpg', false)
+            ->assertDontSee('/images/img_sample_video.avif', false)
             ->assertDontSee('/storage/main-pages/host/host.png', false)
             ->assertDontSee('/storage/main-pages/organizers/organizer.png', false)
             ->assertDontSee('/storage/main-pages/co-organizers/co-organizer.png', false)
@@ -289,7 +291,9 @@ class ForumRoutingTest extends TestCase
 
         $this->get('/publishing-original')
             ->assertOk()
-            ->assertViewIs('home.index')
+            ->assertViewIs('publishing-original.home.index')
+            ->assertSee('/publishing-original-assets/images/img_sample_video.avif', false)
+            ->assertSee('https://www.youtube.com/shorts/CCpPwCRE-f4', false)
             ->assertSee('/publishing-original/programme', false);
 
         $this->get('/default')
@@ -300,6 +304,21 @@ class ForumRoutingTest extends TestCase
         $this->get('/default/media/youtube')
             ->assertOk()
             ->assertViewIs('forums.default.media.youtube');
+    }
+
+    public function test_publishing_original_assets_are_served_from_the_untouched_archive(): void
+    {
+        $this->get('/publishing-original-assets/images/img_sample_video.avif')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/avif')
+            ->assertHeader('Cache-Control', 'immutable, max-age=31536000, public');
+
+        $this->get('/publishing-original-assets/css/main.css')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'text/css; charset=UTF-8')
+            ->assertSee('/publishing-original-assets/images/', false);
+
+        $this->get('/publishing-original-assets/../.env')->assertNotFound();
     }
 
     public function test_every_publishing_original_and_default_subpage_is_previewable(): void
@@ -344,6 +363,47 @@ class ForumRoutingTest extends TestCase
                     $response->assertOk();
                 }
             }
+        }
+    }
+
+    public function test_publishing_samples_are_visible_only_on_the_original_preview_routes(): void
+    {
+        $dynamicMainPage = MainPage::factory()->create([
+            'folder_name' => 'empty-preview-'.Str::lower(Str::random(10)),
+            'is_visible' => true,
+        ]);
+
+        $samples = [
+            'about/forum' => 'Global Challenges',
+            'about/committee' => 'Giulia Ajmone',
+            'about/organizers' => 'Asia-Europe Foundation',
+            'about/venue' => 'International Convention Center Jeju',
+            'programme/theme' => 'Climate-Smart Innovations for Sustainable Local Economies',
+            'programme' => 'Opening Ceremony',
+            'programme/speakers' => 'Giulia Ajmone',
+            'programme/book' => 'Global Eco-Innovation Forum 2026_programme Book',
+            'archive/theme' => 'Climate-Smart Innovations for Sustainable Local Economies',
+            'archive/programme' => 'Opening Ceremony',
+            'archive/speakers' => 'Giulia Ajmone',
+            'archive/past' => 'History of Previous Forums',
+            'media/gallery' => 'img_sample_gallery',
+            'media/news' => 'Global Forum Highlights Innovation and International Cooperation',
+            'media/news/view' => 'Global Forum Highlights',
+            'media/youtube' => '2025 YouTube',
+            'registration' => 'Pre-registration Period',
+            'registration/register' => 'Please ensure that your name',
+            'registration/confirm' => 'Registration Confirmation',
+            'announcements' => 'It’s the space where the title goes in.',
+            'announcements/view' => 'concluded successfully',
+        ];
+
+        foreach ($samples as $path => $sample) {
+            $this->get('/'.$dynamicMainPage->folder_name.'/'.$path)
+                ->assertOk()
+                ->assertDontSee($sample);
+            $this->get('/publishing-original/'.$path)
+                ->assertOk()
+                ->assertSee($sample);
         }
     }
 

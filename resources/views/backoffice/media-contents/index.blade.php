@@ -57,7 +57,7 @@
                 <div class="filter-group"><label for="created_from" class="filter-label">등록일 시작</label><input type="date" id="created_from" name="created_from" class="filter-input" value="{{ $filters['created_from'] ?? '' }}"></div>
                 <div class="filter-group"><label for="created_to" class="filter-label">등록일 끝</label><input type="date" id="created_to" name="created_to" class="filter-input" value="{{ $filters['created_to'] ?? '' }}"></div>
                 <div class="filter-group"><label for="keyword" class="filter-label">검색어</label><input type="text" id="keyword" name="keyword" class="filter-input" placeholder="{{ isset($context['category_group_code']) ? '제목을 입력하세요' : '제목 또는 폴더명을 입력하세요' }}" value="{{ $filters['keyword'] ?? '' }}"></div>
-                <div class="filter-group"><div class="filter-buttons"><button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> 검색</button><a href="{{ route($context['route'].'.index', array_merge($routeParameters, isset($context['category_group_code']) && !empty($filters['category_id']) ? ['category_id' => $filters['category_id']] : [])) }}" class="btn btn-secondary"><i class="fas fa-undo"></i> 초기화</a></div></div>
+                <div class="filter-group"><div class="filter-buttons"><button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> 검색</button><a href="{{ route($context['route'].'.index', array_merge($routeParameters, $createParameters)) }}" class="btn btn-secondary"><i class="fas fa-undo"></i> 초기화</a></div></div>
             </div>
         </form></div>
 
@@ -71,7 +71,7 @@
         </form></div></div>
 
         <div class="table-responsive"><table class="board-table">
-            <thead><tr><th class="w5 board-checkbox-column"><input type="checkbox" id="select-all" class="form-check-input"></th><th class="w5">번호</th><th class="w20">{{ isset($context['category_group_code']) ? '분류' : '제목(폴더명)' }}</th><th class="w25">제목</th><th class="w10">노출여부</th><th class="w10">작성자</th><th class="w10">등록일</th><th class="w15">관리</th></tr></thead>
+            <thead><tr><th class="w5 board-checkbox-column"><input type="checkbox" id="select-all" class="form-check-input"></th><th class="w5">번호</th><th class="w20">{{ isset($context['category_group_code']) ? ($context['category_column_label'] ?? '분류') : '제목(폴더명)' }}</th><th class="w25">제목</th><th class="w10">노출여부</th><th class="w10">작성자</th><th class="w10">등록일</th><th class="w15">관리</th></tr></thead>
             <tbody>
             @forelse ($contents as $index => $content)
                 @php

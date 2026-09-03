@@ -176,6 +176,90 @@ $committeeGroups = [
 @endsection
 
 @section('content')
+@if($programmePage ?? null)
+@php
+	$programmeSessions = $programmePage->sessions
+		->where('is_active', true)
+		->map(function (\App\Models\ProgrammePageSession $session): array {
+			$members = $session->speakers
+				->where('is_active', true)
+				->map(static function (\App\Models\Speaker $speaker): array {
+					$image = null;
+					if ($speaker->is_image_visible && $speaker->profile_image) {
+						$image = str_starts_with($speaker->profile_image, '/')
+							? asset(ltrim($speaker->profile_image, '/'))
+							: asset('storage/'.$speaker->profile_image);
+					}
+
+					$attachment = $speaker->attachment_files[0]['path'] ?? null;
+					$file = $attachment
+						? (str_starts_with($attachment, '/') ? asset(ltrim($attachment, '/')) : asset('storage/'.$attachment))
+						: null;
+
+					return [
+						'img' => $image,
+						'type' => \App\Models\Speaker::roleOptions()[$speaker->role] ?? $speaker->role,
+						'name' => $speaker->full_name,
+						'position' => $speaker->position,
+						'affiliation' => $speaker->affiliation,
+						'bio' => $speaker->content,
+						'file' => $file,
+					];
+				})
+				->values();
+
+			return [
+				'day_number' => $session->day_number,
+				'name' => $session->session_name,
+				'members' => $members,
+			];
+		})
+		->values();
+@endphp
+<div class="inner">
+	<section class="steering_committee_area tabs_area">
+		@if($programmeSessions->isNotEmpty())
+		<ul class="tabs" role="tablist" aria-label="Programme Speakers">
+			@foreach($programmeSessions as $session)
+			<li role="presentation">
+				<button type="button" role="tab" id="tab-day{{ $session['day_number'] }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" aria-controls="panel-day{{ $session['day_number'] }}" @if(!$loop->first) tabindex="-1" @endif>DAY {{ $session['day_number'] }}</button>
+			</li>
+			@endforeach
+		</ul>
+
+		<div class="cont">
+			@foreach($programmeSessions as $session)
+			<div id="panel-day{{ $session['day_number'] }}" class="con_panel" role="tabpanel" aria-labelledby="tab-day{{ $session['day_number'] }}" @if(!$loop->first) hidden @endif>
+				<h2 class="btit">{{ $session['name'] ?: 'DAY '.$session['day_number'].' SESSION' }}</h2>
+				@if($session['members']->isNotEmpty())
+				<ul class="flex">
+					@foreach($session['members'] as $member)
+					<li>
+						<button type="button" class="btn-open-modal" aria-haspopup="dialog" aria-controls="modal-steering"
+							data-img="{{ $member['img'] }}"
+							@if(filled($member['type'])) data-type="{{ $member['type'] }}" @endif
+							data-name="{{ $member['name'] }}"
+							data-position="{{ $member['position'] }}"
+							data-affiliation="{{ $member['affiliation'] }}"
+							data-bio="{{ $member['bio'] }}"
+							@if($member['file']) data-file="{{ $member['file'] }}" @endif>
+							<span class="imgfit" aria-hidden="true">@if($member['img'])<img src="{{ $member['img'] }}" alt="">@endif</span>
+							@if(filled($member['type']))<span class="type type-{{ \Illuminate\Support\Str::slug($member['type']) }}">{{ $member['type'] }}</span>@endif
+							<span class="name">{{ $member['name'] }}</span>
+							<span class="position">{{ $member['position'] }}</span>
+							<span class="affiliation">{{ $member['affiliation'] }}</span>
+						</button>
+					</li>
+					@endforeach
+				</ul>
+				@endif
+			</div>
+			@endforeach
+		</div>
+		@endif
+	</section>
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="steering_committee_area tabs_area">
 		<ul class="tabs" role="tablist" aria-label="Programme Schedule">
@@ -298,6 +382,7 @@ $committeeGroups = [
 		</div>
 	</section>
 </div>
+@endif
 
 <!-- 모달 팝업 -->
 <div id="modal-steering" class="popup popup_steering" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>

@@ -6,6 +6,71 @@
 @endsection
 
 @section('content')
+@if(isset($newsItems))
+<div class="inner">
+	<section class="program_list">
+		@if($categories->isNotEmpty())
+		<div class="years_select_tab flex">
+			<button type="button" class="arrow prev" aria-label="이전 연도">이전</button>
+			<ul class="tabs mb0" role="tablist" aria-label="Year Selection">
+				@foreach($categories as $category)
+				<li role="presentation">
+					<form action="{{ route('media.news') }}" method="get">
+						@if($searchKeyword !== '')<input type="hidden" name="search_condition" value="{{ $searchCondition }}"><input type="hidden" name="search_keyword" value="{{ $searchKeyword }}">@endif
+						<button type="submit" name="category_id" value="{{ $category->id }}" role="tab" aria-selected="{{ $selectedCategoryId === $category->id ? 'true' : 'false' }}">{{ $category->name }}</button>
+					</form>
+				</li>
+				@endforeach
+			</ul>
+			<button type="button" class="arrow next" aria-label="다음 연도">다음</button>
+		</div>
+		@endif
+
+		<div class="board_top">
+			<div class="title_area">
+				<span class="total">Total <strong class="c_iden">{{ $newsItems->total() }}</strong></span>
+				<span class="page">Page <strong class="c_iden">{{ $newsItems->currentPage() }}</strong>/{{ max(1, $newsItems->lastPage()) }}</span>
+			</div>
+			<form action="{{ route('media.news') }}" method="get" class="search_wrap">
+				<fieldset>
+					<legend class="sound_only">Search posts</legend>
+					@if($selectedCategoryId !== null)<input type="hidden" name="category_id" value="{{ $selectedCategoryId }}">@endif
+					<label for="search-condition" class="sound_only">Select search criteria</label>
+					<select name="search_condition" id="search-condition" class="text">
+						<option value="title" @selected($searchCondition === 'title')>Title</option>
+						<option value="content" @selected($searchCondition === 'content')>Content</option>
+					</select>
+					<div class="search_area">
+						<label for="search-keyword" class="sound_only">Enter search term</label>
+						<input type="text" id="search-keyword" name="search_keyword" value="{{ $searchKeyword }}" class="text" placeholder="Please enter a search term.">
+						<button type="submit" class="btn">Search</button>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+
+		@if($newsItems->isNotEmpty())
+		<h2 class="sound_only">News Clippings List</h2>
+		<ul class="news_list">
+			@foreach($newsItems as $newsItem)
+			<li>
+				<article>
+					<a href="{{ route('media.news.view', ['mediaContent' => $newsItem->id]) }}">
+						<span class="type">NEWS</span>
+						<h3 class="tit">{{ $newsItem->title }}</h3>
+						@if(filled(strip_tags((string) $newsItem->content)))<p>{{ \Illuminate\Support\Str::limit(strip_tags($newsItem->content), 180) }}</p>@endif
+						@if($newsItem->published_date)<span class="date">{{ $newsItem->published_date->format('Y.m.d') }}</span>@endif
+						<span class="btn btn_wbb">View Details</span>
+					</a>
+				</article>
+			</li>
+		@endforeach
+		</ul>
+		@endif
+		@include('components.frontend-pagination', ['paginator' => $newsItems])
+	</section>
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="program_list">
 		<div class="years_select_tab flex">
@@ -134,11 +199,11 @@
 		</div>
 	</section>
 </div>
+@endif
 @endsection
 
+@if(isset($newsItems) || ($mainPage?->folder_name ?? null) === 'publishing-original')
 @push('scripts')
 <script src="/js/script_archive.js"></script>
-<script>
-
-</script>
 @endpush
+@endif

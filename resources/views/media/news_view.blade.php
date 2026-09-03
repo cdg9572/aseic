@@ -7,6 +7,37 @@
 @endsection
 
 @section('content')
+@if($newsItem ?? null)
+<div class="inner">
+	<section class="board_view">
+		<article>
+			<div class="tit_area">
+				<h1 class="tit">{{ $newsItem->title }}</h1>
+				<dl class="info">
+					@if($newsItem->published_date)<div class="info_item"><dt>Date</dt><dd>{{ $newsItem->published_date->format('Y.m.d') }}</dd></div>@endif
+					<div class="info_item"><dt>Views</dt><dd>{{ $newsItem->view_count }}</dd></div>
+				</dl>
+			</div>
+			@if(filled(strip_tags((string) $newsItem->content)) || filled($newsItem->image_path))
+			<div class="cont">
+				@if(filled($newsItem->image_path))
+				@php
+					$newsImageUrl = str_starts_with($newsItem->image_path, '/')
+						? asset(ltrim($newsItem->image_path, '/'))
+						: asset('storage/'.$newsItem->image_path);
+				@endphp
+				<div class="tac"><img src="{{ $newsImageUrl }}" alt="{{ $newsItem->title }}"></div>
+				@endif
+				{!! $newsItem->content !!}
+			</div>
+			@endif
+		</article>
+		<div class="board_bottom flex_center">
+			<a href="{{ route('media.news', ['category_id' => $newsItem->category_id]) }}" class="btn btn_wbb">Back to List</a>
+		</div>
+	</section>
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="board_view">
 		<article>
@@ -50,8 +81,11 @@
 		<div class="imgfit"><img id="modal-img" src="/images/img_sample_gallery_large.avif" alt="Image Title"></div>
 	</div>
 </div>
+@endif
 @endsection
 
+@if(($mainPage?->folder_name ?? null) === 'publishing-original')
 @push('scripts')
 <script src="/js/script_pop_image.js"></script>
 @endpush
+@endif

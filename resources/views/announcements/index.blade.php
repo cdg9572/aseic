@@ -6,6 +6,44 @@
 @endsection
 
 @section('content')
+@if(isset($announcements))
+<div class="inner">
+	<section class="announcements_list">
+		<div class="board_top">
+			<h2 class="board_tit">Announcements</h2>
+			<form action="{{ route('announcements.index') }}" method="get" class="search_wrap" role="search">
+				<fieldset>
+					<legend class="sound_only">Search announcements</legend>
+					<label for="search-condition" class="sound_only">Select search criteria</label>
+					<select name="search_condition" id="search-condition" class="text"><option value="title" @selected($searchCondition === 'title')>Title</option><option value="content" @selected($searchCondition === 'content')>Content</option></select>
+					<div class="search_area"><label for="search-keyword" class="sound_only">Enter search term</label><input type="text" id="search-keyword" name="search_keyword" value="{{ $searchKeyword }}" class="text" placeholder="Please enter a search term."><button type="submit" class="btn">Search</button></div>
+				</fieldset>
+			</form>
+		</div>
+
+		@if($announcements->isNotEmpty())
+		<div class="board_basic">
+			<table>
+				<caption class="sound_only">List of announcements, providing NO, Title, View, and Date information.</caption>
+				<colgroup><col class="brd_num"><col class="brd_tit"><col class="brd_view"><col class="brd_date"></colgroup>
+				<thead><tr><th scope="col">NO</th><th scope="col">Title</th><th scope="col">View</th><th scope="col">Date</th></tr></thead>
+				<tbody>
+					@foreach($announcements as $announcement)
+					<tr @class(['notice' => $announcement->is_notice, 'new' => $announcement->created_at->isAfter(now()->subDays(7))])>
+						<td class="brd_num">@if($announcement->is_notice)<span class="sound_only">Notice</span>Notice @else{{ $announcements->total() - $announcements->firstItem() - $loop->index + 1 }}@endif</td>
+						<td class="brd_tit"><a href="{{ route('announcements.view', ['announcement' => $announcement->id]) }}">@if($announcement->created_at->isAfter(now()->subDays(7)))<span class="sound_only">[New post]</span>@endif{{ $announcement->title }}</a></td>
+						<td class="brd_view"><span class="sound_only">Views: </span>{{ $announcement->view_count }}</td>
+						<td class="brd_date"><span class="sound_only">Date: </span>{{ $announcement->created_at->format('Y.m.d') }}</td>
+					</tr>
+					@endforeach
+				</tbody>
+			</table>
+		</div>
+		@endif
+		@include('components.frontend-pagination', ['paginator' => $announcements])
+	</section>
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="announcements_list">
 
@@ -130,4 +168,5 @@
 		</div>
 	</section>
 </div>
+@endif
 @endsection

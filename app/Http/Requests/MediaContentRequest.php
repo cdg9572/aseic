@@ -65,7 +65,7 @@ class MediaContentRequest extends FormRequest
         abort_unless($type === MediaContent::TYPE_YOUTUBE, 404);
 
         return [...$rules,
-            'page_title' => ['required', 'string', 'max:255'],
+            'category_id' => $this->categoryRules(Category::GROUP_CODE_YOUTUBE_CHANNEL),
             'subtitle' => ['nullable', 'string'],
             'title' => ['required', 'string', 'max:255'],
             'link' => ['required', 'url', 'max:2048'],
@@ -75,9 +75,7 @@ class MediaContentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'page_title.required' => (string) $this->route('media_type') === MediaContent::TYPE_PHOTO_FOLDER
-                ? '제목을 입력해주세요.'
-                : '제목(폴더명)을 입력해주세요.',
+            'page_title.required' => '제목을 입력해주세요.',
             'title.required' => '제목을 입력해주세요.',
             'category_id.required' => '분류를 선택해주세요.',
             'category_id.exists' => '사용할 수 없는 분류입니다.',

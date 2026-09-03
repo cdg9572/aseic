@@ -3,10 +3,40 @@
 @section('styles')
 {!! \App\Helpers\CssHelper::minTag('/css/archive.css') !!}
 {!! \App\Helpers\CssHelper::minTag('/css/programme.css') !!}
+{!! \App\Helpers\CssHelper::minTag('/css/theme.css') !!}
 {!! \App\Helpers\CssHelper::minTag('/css/table.css') !!}
 @endsection
 
 @section('content')
+@if(isset($categories))
+<section class="theme_info_area" aria-labelledby="archive-programme-heading">
+	<div class="inner">
+		<h2 id="archive-programme-heading" class="sound_only">Archive Programme</h2>
+		@include('archive._year_tabs', ['routeName' => 'archive.programme'])
+		@if(($programmePage ?? null) && (filled($programmePage->title) || filled($programmePage->event_date) || filled($programmePage->location)))
+		<div class="infobox">
+			@if(filled(strip_tags((string) $programmePage->title)))<div class="tit">{!! $programmePage->title !!}</div>@endif
+			@if(filled($programmePage->event_date) || filled($programmePage->location))
+			<ul class="info_list">
+				@if(filled($programmePage->event_date))<li class="i1">{{ $programmePage->event_date }}</li>@endif
+				@if(filled($programmePage->location))<li class="i2">{{ $programmePage->location }}</li>@endif
+			</ul>
+			@endif
+		</div>
+		@endif
+	</div>
+</section>
+@if(($programmePage ?? null) && filled(strip_tags((string) $programmePage->content)))
+<div class="inner">
+	<section class="program_list" aria-labelledby="archive-programme-content-heading">
+		<h2 id="archive-programme-content-heading" class="sound_only">Archive Programme Details</h2>
+		@if(filled(strip_tags((string) $programmePage->content)))
+		<div class="programme-admin-content">{!! $programmePage->content !!}</div>
+		@endif
+	</section>
+</div>
+@endif
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 
 
 <div class="inner">
@@ -312,9 +342,12 @@
 	</section>
 </div>
 
+@endif
 @endsection
 
+@if(($categories ?? collect())->isNotEmpty() || ($mainPage?->folder_name ?? null) === 'publishing-original')
 @push('scripts')
 <script src="/js/script_archive.js"></script>
 <script src="/js/script_accordion.js"></script>
 @endpush
+@endif

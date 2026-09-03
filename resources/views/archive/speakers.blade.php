@@ -176,6 +176,9 @@ $committeeGroups = [
 @endsection
 
 @section('content')
+@if($programmePage ?? null)
+@include('programme._linked-speakers', ['programmePage' => $programmePage])
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="steering_committee_area tabs_area">
 
@@ -311,8 +314,11 @@ $committeeGroups = [
 		</div>
 	</div>
 </div>
+@endif
 @endsection
 
+@if(($mainPage?->folder_name ?? null) === 'publishing-original')
 @push('scripts')
 <script src="/js/script_speakers.js"></script>
 @endpush
+@endif

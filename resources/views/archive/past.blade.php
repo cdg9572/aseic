@@ -5,6 +5,16 @@
 @endsection
 
 @section('content')
+@if($programmePage ?? null)
+@if(filled(strip_tags((string) $programmePage->content)))
+<div class="inner">
+	<section aria-labelledby="archive-legacy-heading">
+		<h2 id="archive-legacy-heading" class="sound_only">Past Forums</h2>
+		<div class="programme-admin-content">{!! $programmePage->content !!}</div>
+	</section>
+</div>
+@endif
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 
 <!-- 포럼 핵심 정보 (Hero Section) -->
 <section class="theme_info_area" aria-labelledby="archive-theme-overview-heading">
@@ -88,4 +98,5 @@
 	</div>
 </section>
 
+@endif
 @endsection

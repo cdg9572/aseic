@@ -5,6 +5,56 @@
 @endsection
 
 @section('content')
+@if($aboutPage ?? null)
+@php
+	$detail = $aboutPage->forumDetail;
+	$statistics = [
+		['class' => 'i1', 'value' => $detail?->forums_since_2015, 'label' => 'Forums Since 2015'],
+		['class' => 'i2', 'value' => $detail?->participants, 'label' => 'Participants'],
+		['class' => 'i3', 'value' => $detail?->countries, 'label' => 'Countries'],
+		['class' => 'i4', 'value' => $detail?->organizations, 'label' => 'Organizations'],
+	];
+	$backgrounds = collect($detail?->backgrounds ?? [])->filter(fn ($item) => filled($item['title'] ?? null) || filled(strip_tags((string) ($item['content'] ?? ''))))->values();
+	$objectives = collect($detail?->objectives ?? [])->filter(fn ($item) => filled($item['title'] ?? null) || filled(strip_tags((string) ($item['content'] ?? ''))))->values();
+@endphp
+<div class="inner">
+	@if(filled(strip_tags((string) $detail?->overview)) || collect($statistics)->contains(fn ($stat) => filled($stat['value'])))
+	<section class="scon overview_area" aria-labelledby="overview-heading">
+		<h2 id="overview-heading" class="stit">Overview</h2>
+		<div class="inbox flex">
+			@if(filled(strip_tags((string) $detail?->overview)))<div class="txt">{!! $detail->overview !!}</div>@endif
+			<ul class="flex" aria-label="Key Statistics">
+				@foreach($statistics as $stat)
+					@if(filled($stat['value']))<li class="{{ $stat['class'] }}"><strong>{{ $stat['value'] }}</strong><p>{{ $stat['label'] }}</p></li>@endif
+				@endforeach
+			</ul>
+		</div>
+	</section>
+	@endif
+
+	@if($backgrounds->isNotEmpty())
+	<section class="scon background_area" aria-labelledby="background-heading">
+		<h2 id="background-heading" class="stit">Background</h2>
+		<ol class="flex">
+			@foreach($backgrounds as $background)
+			<li class="i{{ $loop->iteration }}"><span class="num" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><h3 class="tit">{{ $background['title'] ?? '' }}</h3>{!! $background['content'] ?? '' !!}</li>
+			@endforeach
+		</ol>
+	</section>
+	@endif
+
+	@if($objectives->isNotEmpty())
+	<section class="scon objectives_area" aria-labelledby="objectives-heading">
+		<h2 id="objectives-heading" class="stit">Objectives</h2>
+		<ul class="flex">
+			@foreach($objectives as $objective)
+			<li class="i{{ $loop->iteration }}"><h3 class="tit">{{ $objective['title'] ?? '' }}</h3>{!! $objective['content'] ?? '' !!}</li>
+			@endforeach
+		</ul>
+	</section>
+	@endif
+</div>
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 <div class="inner">
 	<section class="scon overview_area" aria-labelledby="overview-heading">
 		<h2 id="overview-heading" class="stit">Overview</h2>
@@ -46,5 +96,6 @@
 		</ul>
 	</section>
 </div>
+@endif
 
 @endsection

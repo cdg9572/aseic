@@ -143,6 +143,8 @@ class MediaContentController extends Controller
         $data = $request->safe()->except(['image']);
         if (in_array($context['type'], [MediaContent::TYPE_PHOTO_ITEM, MediaContent::TYPE_NEWS_ITEM], true)) {
             $data['page_title'] = $data['title'];
+        } elseif ($context['type'] === MediaContent::TYPE_YOUTUBE) {
+            $data['page_title'] = Category::query()->whereKey($data['category_id'])->value('name');
         }
         $this->service->create($context['type'], $parent, $data, $request->file('image'), $request->user()?->id);
 
@@ -172,6 +174,8 @@ class MediaContentController extends Controller
         $data = $request->safe()->except(['image']);
         if (in_array($context['type'], [MediaContent::TYPE_PHOTO_ITEM, MediaContent::TYPE_NEWS_ITEM], true)) {
             $data['page_title'] = $data['title'];
+        } elseif ($context['type'] === MediaContent::TYPE_YOUTUBE) {
+            $data['page_title'] = Category::query()->whereKey($data['category_id'])->value('name');
         }
         $this->service->update($content, $data, $request->file('image'), $request->boolean('remove_image'), $request->user()?->id);
 
@@ -208,7 +212,7 @@ class MediaContentController extends Controller
             MediaContent::TYPE_PHOTO_FOLDER => ['type' => MediaContent::TYPE_PHOTO_FOLDER, 'menu_name' => 'Photo Gallery', 'entity_name' => 'Photo Gallery 폴더', 'route' => 'backoffice.media-photo', 'form' => 'folder', 'child_route' => 'backoffice.media-photo-items'],
             MediaContent::TYPE_PHOTO_ITEM => ['type' => MediaContent::TYPE_PHOTO_ITEM, 'menu_name' => 'Photo Gallery', 'entity_name' => 'Photo', 'route' => 'backoffice.media-photo', 'form' => 'photo', 'category_group_code' => Category::GROUP_CODE_PHOTO_GALLERY, 'category_group_name' => 'Photo Gallery'],
             MediaContent::TYPE_NEWS_ITEM => ['type' => MediaContent::TYPE_NEWS_ITEM, 'menu_name' => 'News Clippings', 'entity_name' => 'News Clipping', 'route' => 'backoffice.media-news', 'form' => 'news', 'category_group_code' => Category::GROUP_CODE_NEWS_CLIPPINGS, 'category_group_name' => 'News Clippings'],
-            MediaContent::TYPE_YOUTUBE => ['type' => MediaContent::TYPE_YOUTUBE, 'menu_name' => 'YouTube Channel', 'entity_name' => 'YouTube Channel', 'route' => 'backoffice.media-youtube', 'form' => 'youtube'],
+            MediaContent::TYPE_YOUTUBE => ['type' => MediaContent::TYPE_YOUTUBE, 'menu_name' => 'YouTube Channel', 'entity_name' => 'YouTube Channel', 'route' => 'backoffice.media-youtube', 'form' => 'youtube', 'category_group_code' => Category::GROUP_CODE_YOUTUBE_CHANNEL, 'category_group_name' => 'YouTube Channel', 'category_label' => '탭 선택', 'category_column_label' => '탭'],
             default => abort(404),
         };
     }

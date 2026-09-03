@@ -6,6 +6,55 @@
 @endsection
 
 @section('content')
+@if(isset($photos))
+<div class="inner">
+	<section class="program_list">
+		@if($categories->isNotEmpty())
+		<div class="years_select_tab flex">
+			<button type="button" class="arrow prev" aria-label="이전 연도">이전</button>
+			<ul class="tabs mb0" role="tablist" aria-label="Year Selection">
+				@foreach($categories as $category)
+				<li role="presentation">
+					<form action="{{ route('media.gallery') }}" method="get">
+						<button type="submit" name="category_id" value="{{ $category->id }}" role="tab" aria-selected="{{ $selectedCategoryId === $category->id ? 'true' : 'false' }}">{{ $category->name }}</button>
+					</form>
+				</li>
+				@endforeach
+			</ul>
+			<button type="button" class="arrow next" aria-label="다음 연도">다음</button>
+		</div>
+		@endif
+
+		@if($photos->isNotEmpty())
+		<h2 class="sound_only">Photo Gallery List</h2>
+		<ul class="gallery_basic">
+			@foreach($photos as $photo)
+			@php
+				$photoUrl = str_starts_with((string) $photo->image_path, '/')
+					? asset(ltrim($photo->image_path, '/'))
+					: asset('storage/'.$photo->image_path);
+			@endphp
+			<li><button type="button"><span class="imgfit"><img src="{{ $photoUrl }}" data-large-src="{{ $photoUrl }}" alt="{{ $photo->title }}"></span></button></li>
+		@endforeach
+		</ul>
+		@endif
+		@include('components.frontend-pagination', ['paginator' => $photos])
+	</section>
+</div>
+
+@if($photos->isNotEmpty())
+<div id="modal-pop-image" class="popup popup_pop_image" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+	<div class="dm" data-close="true"></div>
+	<div class="inbox" tabindex="-1">
+		<h3 id="modal-title" class="sound_only">Image Title</h3>
+		<button type="button" class="btn_close" aria-label="Close modal">&times;</button>
+		<button type="button" class="arrow showPrev" aria-label="Previous image">이전</button>
+		<button type="button" class="arrow showNext" aria-label="Next image">다음</button>
+		<div class="imgfit"><img id="modal-img" src="" alt=""></div>
+	</div>
+</div>
+@endif
+@elseif(($mainPage?->folder_name ?? null) === 'publishing-original')
 
 
 <div class="inner">
@@ -74,9 +123,12 @@
 		<div class="imgfit"><img id="modal-img" src="/images/img_sample_gallery_large.avif" alt="Image Title"></div>
 	</div>
 </div>
+@endif
 @endsection
 
+@if(isset($photos) || ($mainPage?->folder_name ?? null) === 'publishing-original')
 @push('scripts')
 <script src="/js/script_archive.js"></script>
 <script src="/js/script_pop_image.js"></script>
 @endpush
+@endif

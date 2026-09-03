@@ -2,6 +2,7 @@
 
 namespace App\Services\Backoffice;
 
+use App\Models\Category;
 use App\Models\MainPage;
 use App\Models\MainPageLink;
 use App\Models\ProgrammePage;
@@ -22,13 +23,17 @@ class ProgrammePageService
     public function getPages(string $type, array $filters, int $perPage): LengthAwarePaginator
     {
         $query = ProgrammePage::query()
-            ->with(['creator:id,name', 'books', 'mainPageLink.mainPage:id,folder_name,event_name'])
+            ->with(['creator:id,name', 'books', 'category:id,name', 'mainPageLink.mainPage:id,folder_name,event_name'])
             ->where('type', $type);
 
         if (($filters['is_linked'] ?? '') !== '') {
             $filters['is_linked'] === '1'
                 ? $query->whereHas('mainPageLink')
                 : $query->whereDoesntHave('mainPageLink');
+        }
+
+        if (! empty($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
         }
 
         if (! empty($filters['created_from'])) {
@@ -63,6 +68,28 @@ class ProgrammePageService
     public function mainPageOptions(): Collection
     {
         return MainPage::query()->latest('id')->get(['id', 'folder_name', 'event_name']);
+    }
+
+    /** @return Collection<int, Category> */
+    public function categoriesForGroup(string $groupCode): Collection
+    {
+        $groupId = Category::query()
+            ->where('code', $groupCode)
+            ->where('depth', 0)
+            ->whereNull('parent_id')
+            ->value('id');
+
+        if ($groupId === null) {
+            return collect();
+        }
+
+        return Category::query()
+            ->where('parent_id', $groupId)
+            ->where('depth', 1)
+            ->active()
+            ->orderByDesc('display_order')
+            ->orderBy('id')
+            ->get(['id', 'name']);
     }
 
     /** @return Collection<int, Speaker> */

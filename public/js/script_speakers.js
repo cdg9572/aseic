@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	const modalName = document.getElementById('name');
 	const modalPosition = document.getElementById('position');
 	const modalAffiliation = document.getElementById('affiliation');
+	const modalLinkedIn = document.getElementById('modal-linkedin');
 	const modalDownload = modal.querySelector('.btn_download');
 	const modalBio = document.getElementById('modal-bio');
 	const closeBtn = modal.querySelector('.btn_close');
@@ -41,10 +42,15 @@ document.addEventListener('DOMContentLoaded', function () {
 		const position = button.getAttribute('data-position');
 		const affiliation = button.getAttribute('data-affiliation');
 		const bio = button.getAttribute('data-bio');
+		const linkedIn = button.getAttribute('data-link');
 		const file = button.getAttribute('data-file'); // 다운로드 파일 경로
 
 		if (modalImg) {
-			modalImg.src = img || '';
+			if (img && img.trim() !== '') {
+				modalImg.setAttribute('src', img);
+			} else {
+				modalImg.removeAttribute('src');
+			}
 			modalImg.alt = name || '';
 		}
 		if (modalTitle) modalTitle.textContent = 'Member Detail - ' + (name || '');
@@ -52,6 +58,15 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (modalPosition) modalPosition.textContent = position || '';
 		if (modalAffiliation) modalAffiliation.textContent = affiliation || '';
 		if (modalBio) modalBio.innerHTML = bio || '';
+		if (modalLinkedIn) {
+			if (linkedIn && linkedIn.trim() !== '') {
+				modalLinkedIn.setAttribute('href', linkedIn);
+				modalLinkedIn.removeAttribute('hidden');
+			} else {
+				modalLinkedIn.removeAttribute('href');
+				modalLinkedIn.setAttribute('hidden', '');
+			}
+		}
 
 		// 1. Type 동적 출력 및 클래스 바인딩 (e.g. type-start-up)
 		if (modalType) {

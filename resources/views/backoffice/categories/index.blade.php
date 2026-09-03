@@ -1,6 +1,6 @@
 @extends('backoffice.layouts.app')
 
-@section('title', '카테고리 관리')
+@section('title', '탭 관리')
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/backoffice/categories.css') }}">

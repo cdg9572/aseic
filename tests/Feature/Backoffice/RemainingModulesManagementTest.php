@@ -3,9 +3,9 @@
 namespace Tests\Feature\Backoffice;
 
 use App\Jobs\SendMailCampaign;
-use App\Models\Category;
 use App\Models\AddressBook;
 use App\Models\AddressBookContact;
+use App\Models\Category;
 use App\Models\MailCampaign;
 use App\Models\MainPage;
 use App\Models\MainPageLink;
@@ -31,11 +31,20 @@ class RemainingModulesManagementTest extends TestCase
 
     private MainPage $mainPage;
 
+    private Category $archiveThemeCategory;
+
+    private Category $archiveProgrammeCategory;
+
+    private Category $youtubeCategory;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->admin = User::factory()->create(['role' => 'super_admin', 'is_active' => true]);
         $this->mainPage = MainPage::factory()->create(['folder_name' => 'remaining-'.strtolower(str()->random(8)), 'event_name' => 'Remaining Modules Test']);
+        $this->archiveThemeCategory = $this->categoryForGroup(Category::GROUP_CODE_ARCHIVE_THEME, '2026');
+        $this->archiveProgrammeCategory = $this->categoryForGroup(Category::GROUP_CODE_ARCHIVE_PROGRAMME, '2026');
+        $this->youtubeCategory = $this->categoryForGroup(Category::GROUP_CODE_YOUTUBE_CHANNEL, '2026');
     }
 
     public function test_all_remaining_menu_list_and_create_screens_render(): void
@@ -81,7 +90,9 @@ class RemainingModulesManagementTest extends TestCase
         $this->actingAs($this->admin)->get('/backoffice/archives/2025-plus/theme/create')
             ->assertOk()
             ->assertSee('Past Forums (2025~) - Theme 신규 등록')
+            ->assertSeeInOrder(['탭 선택', 'Main Page 연결'])
             ->assertSee('Main Page 연결')
+            ->assertSee('name="category_id"', false)
             ->assertSee('name="main_page_id"', false)
             ->assertSee('연결하지 않음')
             ->assertSee('name="subtitle"', false)
@@ -128,6 +139,7 @@ class RemainingModulesManagementTest extends TestCase
             ->assertDontSee('name="event_date"', false);
 
         $this->actingAs($this->admin)->post('/backoffice/archives/2025-plus/theme', [
+            'category_id' => $this->archiveThemeCategory->id,
             'main_page_id' => $this->mainPage->id,
             'page_title' => '2026 Archive Theme',
             'subtitle' => '<p>Archive subtitle</p>',
@@ -143,6 +155,7 @@ class RemainingModulesManagementTest extends TestCase
         $this->assertDatabaseHas('main_page_links', ['main_page_id' => $this->mainPage->id, 'slot' => MainPageLink::SLOT_ARCHIVE_THEME, 'linkable_id' => $theme->id]);
 
         $this->actingAs($this->admin)->post('/backoffice/archives/2025-plus/programme', [
+            'category_id' => $this->archiveProgrammeCategory->id,
             'main_page_id' => $this->mainPage->id,
             'page_title' => '2026 Archive Programme',
             'subtitle' => '<p>Programme subtitle</p>',
@@ -213,7 +226,10 @@ class RemainingModulesManagementTest extends TestCase
 
         $this->actingAs($this->admin)->get('/backoffice/media/youtube/create')
             ->assertOk()
-            ->assertSee('name="page_title"', false)
+            ->assertSeeInOrder(['탭 선택', 'Sub Title', '>제목 <span class="required">'], false)
+            ->assertSee('name="category_id"', false)
+            ->assertDontSee('name="page_title"', false)
+            ->assertDontSee('제목(폴더명)')
             ->assertSee('name="subtitle"', false)
             ->assertSee('name="title"', false)
             ->assertSee('name="link"', false)
@@ -262,6 +278,86 @@ class RemainingModulesManagementTest extends TestCase
             ->assertSee('name="subscription_status"', false)
             ->assertSee('name="content"', false)
             ->assertSee('name="attachments[]"', false);
+    }
+
+    public function test_archive_and_youtube_lists_support_folder_tabs(): void
+    {
+        $this->assertDatabaseHas('admin_menus', [
+            'id' => 42,
+            'name' => '탭 관리',
+            'permission_key' => 'settings.categories',
+        ]);
+
+        $this->actingAs($this->admin)->get('/backoffice/categories')
+            ->assertOk()
+            ->assertSee('탭 관리')
+            ->assertDontSee('카테고리 관리')
+            ->assertSee('Theme')
+            ->assertSee('Programme')
+            ->assertSee('YouTube Channel');
+
+        foreach ([
+            [ProgrammePage::TYPE_ARCHIVE_THEME, Category::GROUP_CODE_ARCHIVE_THEME, $this->archiveThemeCategory, 'Theme'],
+            [ProgrammePage::TYPE_ARCHIVE_PROGRAMME, Category::GROUP_CODE_ARCHIVE_PROGRAMME, $this->archiveProgrammeCategory, 'Programme'],
+        ] as [$type, $groupCode, $newerCategory, $label]) {
+            $olderCategory = $this->categoryForGroup($groupCode, '2025', 1);
+            $olderPage = ProgrammePage::factory()->create([
+                'type' => $type,
+                'category_id' => $olderCategory->id,
+                'page_title' => '2025 Archive '.$label,
+            ]);
+            $newerPage = ProgrammePage::factory()->create([
+                'type' => $type,
+                'category_id' => $newerCategory->id,
+                'page_title' => '2026 Archive '.$label,
+            ]);
+
+            $route = $type === ProgrammePage::TYPE_ARCHIVE_THEME
+                ? '/backoffice/archives/2025-plus/theme'
+                : '/backoffice/archives/2025-plus/programme';
+
+            $this->actingAs($this->admin)->get($route.'?category_id='.$newerCategory->id)
+                ->assertOk()
+                ->assertSeeInOrder(['>2026</a>', '>2025</a>'], false)
+                ->assertSee('class="group-tab active">2026</a>', false)
+                ->assertSee('2026 Archive '.$label)
+                ->assertDontSee('2025 Archive '.$label);
+
+            $this->actingAs($this->admin)->get($route.'/create?category_id='.$newerCategory->id)
+                ->assertOk()
+                ->assertSeeInOrder(['탭 선택', 'Main Page 연결'])
+                ->assertSee('value="'.$newerCategory->id.'" selected', false);
+        }
+
+        MediaContent::query()->create([
+            'type' => MediaContent::TYPE_YOUTUBE,
+            'category_id' => $this->categoryForGroup(Category::GROUP_CODE_YOUTUBE_CHANNEL, '2025', 1)->id,
+            'page_title' => '2025',
+            'title' => 'Older YouTube Video',
+            'link' => 'https://youtu.be/OlderAdminVideo',
+            'is_visible' => true,
+        ]);
+        MediaContent::query()->create([
+            'type' => MediaContent::TYPE_YOUTUBE,
+            'category_id' => $this->youtubeCategory->id,
+            'page_title' => '2026',
+            'title' => 'Newer YouTube Video',
+            'link' => 'https://youtu.be/NewerAdminVideo',
+            'is_visible' => true,
+        ]);
+
+        $this->actingAs($this->admin)->get('/backoffice/media/youtube?category_id='.$this->youtubeCategory->id)
+            ->assertOk()
+            ->assertSeeInOrder(['>2026</a>', '>2025</a>'], false)
+            ->assertSee('class="group-tab active">2026</a>', false)
+            ->assertSee('Newer YouTube Video')
+            ->assertDontSee('Older YouTube Video');
+
+        $this->actingAs($this->admin)->get('/backoffice/media/youtube/create?category_id='.$this->youtubeCategory->id)
+            ->assertOk()
+            ->assertSeeInOrder(['탭 선택', 'Sub Title', '>제목 <span class="required">'], false)
+            ->assertDontSee('name="page_title"', false)
+            ->assertSee('value="'.$this->youtubeCategory->id.'" selected', false);
     }
 
     public function test_media_categories_and_youtube_crud_follow_planned_fields(): void
@@ -369,7 +465,7 @@ class RemainingModulesManagementTest extends TestCase
             ->assertSee('ASEIC News Updated');
 
         $this->actingAs($this->admin)->post('/backoffice/media/youtube', [
-            'page_title' => '2026 YouTube',
+            'category_id' => $this->youtubeCategory->id,
             'subtitle' => '<p>YouTube subtitle</p>',
             'title' => 'ASEIC Forum Video',
             'link' => 'https://www.youtube.com/watch?v=example',
@@ -377,7 +473,47 @@ class RemainingModulesManagementTest extends TestCase
         ])->assertRedirect(route('backoffice.media-youtube.index'));
 
         $this->assertDatabaseHas('media_contents', ['type' => MediaContent::TYPE_NEWS_ITEM, 'title' => 'ASEIC News Updated', 'category_id' => $newsCategory->id, 'view_count' => 24]);
-        $this->assertDatabaseHas('media_contents', ['type' => MediaContent::TYPE_YOUTUBE, 'title' => 'ASEIC Forum Video']);
+        $this->assertDatabaseHas('media_contents', [
+            'type' => MediaContent::TYPE_YOUTUBE,
+            'category_id' => $this->youtubeCategory->id,
+            'page_title' => $this->youtubeCategory->name,
+            'title' => 'ASEIC Forum Video',
+        ]);
+
+        $youtube = MediaContent::query()
+            ->where('type', MediaContent::TYPE_YOUTUBE)
+            ->where('title', 'ASEIC Forum Video')
+            ->firstOrFail();
+        $youtube2027 = $this->categoryForGroup(Category::GROUP_CODE_YOUTUBE_CHANNEL, '2027', 3);
+
+        $this->actingAs($this->admin)->put('/backoffice/media/youtube/'.$youtube->id, [
+            'category_id' => $youtube2027->id,
+            'subtitle' => '<p>Updated YouTube subtitle</p>',
+            'title' => 'ASEIC Forum Video Updated',
+            'link' => 'https://www.youtube.com/watch?v=updated-example',
+            'is_visible' => '1',
+        ])->assertRedirect(route('backoffice.media-youtube.index'));
+
+        $this->assertDatabaseHas('media_contents', [
+            'id' => $youtube->id,
+            'category_id' => $youtube2027->id,
+            'page_title' => '2027',
+            'title' => 'ASEIC Forum Video Updated',
+        ]);
+    }
+
+    private function categoryForGroup(string $groupCode, string $name, int $displayOrder = 2): Category
+    {
+        $group = Category::query()->where('code', $groupCode)->firstOrFail();
+
+        return Category::query()->create([
+            'parent_id' => $group->id,
+            'code' => $groupCode.'_'.strtoupper(str()->random(6)),
+            'name' => $name,
+            'depth' => 1,
+            'display_order' => $displayOrder,
+            'is_active' => true,
+        ]);
     }
 
     public function test_announcements_preserve_subtitle_in_existing_notice_module(): void

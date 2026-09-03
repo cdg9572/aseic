@@ -12,6 +12,12 @@ class Category extends Model
 
     public const GROUP_CODE_NEWS_CLIPPINGS = 'MEDIA_NEWS_CLIPPINGS';
 
+    public const GROUP_CODE_ARCHIVE_THEME = 'ARCHIVE_THEME';
+
+    public const GROUP_CODE_ARCHIVE_PROGRAMME = 'ARCHIVE_PROGRAMME';
+
+    public const GROUP_CODE_YOUTUBE_CHANNEL = 'MEDIA_YOUTUBE_CHANNEL';
+
     protected $fillable = [
         'parent_id',
         'code',

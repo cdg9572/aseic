@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	if (tabButtons.length === 0 || !tabsContainer) return;
 
-	let activeIndex = tabButtons.length - 1;
+	let activeIndex = tabButtons.findIndex((button) => button.getAttribute('aria-selected') === 'true');
+	if (activeIndex < 0) activeIndex = tabButtons.length - 1;
 
 	// 탭 활성화 및 중앙 스크롤 이동
 	function setActiveTab(index) {
@@ -56,13 +57,13 @@ document.addEventListener('DOMContentLoaded', function () {
 	// 3. 이전/다음 화살표 클릭
 	if (prevBtn) {
 		prevBtn.addEventListener('click', function () {
-			if (activeIndex > 0) setActiveTab(activeIndex - 1);
+			if (activeIndex > 0) tabButtons[activeIndex - 1].click();
 		});
 	}
 
 	if (nextBtn) {
 		nextBtn.addEventListener('click', function () {
-			if (activeIndex < tabButtons.length - 1) setActiveTab(activeIndex + 1);
+			if (activeIndex < tabButtons.length - 1) tabButtons[activeIndex + 1].click();
 		});
 	}
 

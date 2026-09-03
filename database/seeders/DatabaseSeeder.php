@@ -23,10 +23,10 @@ class DatabaseSeeder extends Seeder
         // 게시판 스킨 시더 실행
         $this->call(BoardSkinSeeder::class);
 
-        // 게시판 템플릿 시더 실행 (카테고리보다 먼저)
+        // 게시판 템플릿 시더 실행
         $this->call(BoardTemplateSeeder::class);
 
-        // 카테고리 시더 실행 (템플릿 이후)
+        // 탭 관리 0차 메뉴 시더 실행
         $this->call(CategorySeeder::class);
 
         // 게시판 시더 실행

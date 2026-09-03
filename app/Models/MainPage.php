@@ -146,6 +146,41 @@ class MainPage extends Model
         return $startDate.' – '.$this->event_end_date->format('Y. m. d');
     }
 
+    public function getPastForumVideoThumbnailUrlAttribute(): ?string
+    {
+        $url = trim((string) $this->past_forum_video_url);
+        if ($url === '') {
+            return null;
+        }
+
+        $parts = parse_url($url);
+        if (! is_array($parts) || empty($parts['host'])) {
+            return null;
+        }
+
+        $host = strtolower((string) $parts['host']);
+        $host = preg_replace('/^(?:www\.|m\.)/', '', $host) ?? $host;
+        $path = trim((string) ($parts['path'] ?? ''), '/');
+        $videoId = null;
+
+        if ($host === 'youtu.be') {
+            $videoId = explode('/', $path)[0] ?? null;
+        } elseif (in_array($host, ['youtube.com', 'youtube-nocookie.com'], true)) {
+            if ($path === 'watch') {
+                parse_str((string) ($parts['query'] ?? ''), $query);
+                $videoId = $query['v'] ?? null;
+            } elseif (preg_match('#^(?:shorts|embed|live)/([^/]+)#', $path, $matches) === 1) {
+                $videoId = $matches[1];
+            }
+        }
+
+        if (! is_string($videoId) || preg_match('/^[A-Za-z0-9_-]{11}$/', $videoId) !== 1) {
+            return null;
+        }
+
+        return 'https://i.ytimg.com/vi/'.$videoId.'/maxresdefault.jpg';
+    }
+
     /**
      * @return array<int, array{path: string, name: string, size: int|null}>
      */

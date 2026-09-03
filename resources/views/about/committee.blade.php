@@ -99,6 +99,35 @@ $committeeGroups = [
 		]
 	]
 ];
+
+if (! ($aboutPage ?? null) && ($mainPage?->folder_name ?? null) !== 'publishing-original') {
+	$committeeGroups = ['group1' => [], 'group2' => []];
+}
+
+if (($aboutPage ?? null) instanceof \App\Models\AboutPage) {
+	$toMember = static function (\App\Models\HomepagePartner $partner): array {
+		$image = null;
+		if ($partner->is_image_visible && $partner->profile_image) {
+			$image = str_starts_with($partner->profile_image, '/')
+				? asset(ltrim($partner->profile_image, '/'))
+				: asset('storage/'.$partner->profile_image);
+		}
+
+		return [
+			'img' => $image,
+			'name' => $partner->full_name,
+			'position' => $partner->position,
+			'affiliation' => $partner->affiliation,
+			'bio' => $partner->content,
+			'link' => $partner->linkedin_url,
+		];
+	};
+
+	$committeeGroups = [
+		'group1' => $aboutPage->steeringOrganizedPartners->where('is_active', true)->map($toMember)->values()->all(),
+		'group2' => $aboutPage->steeringPartnershipPartners->where('is_active', true)->map($toMember)->values()->all(),
+	];
+}
 @endphp
 
 @section('styles')
@@ -111,6 +140,7 @@ $committeeGroups = [
 	<section class="scon steering_committee_area" aria-labelledby="steering-committee-heading">
 		<h2 id="steering-committee-heading" class="sound_only">Steering Committee List</h2>
 
+		@if($committeeGroups['group1'] !== [])
 		<ul class="flex">
 			@foreach($committeeGroups['group1'] as $member)
 			<li>
@@ -121,7 +151,7 @@ $committeeGroups = [
 					data-affiliation="{{ $member['affiliation'] }}"
 					data-bio="{{ $member['bio'] }}"
 					data-link="{{ $member['link'] ?? '' }}">
-					<span class="imgfit" aria-hidden="true"><img src="{{ $member['img'] }}" alt=""></span>
+					<span class="imgfit" aria-hidden="true">@if($member['img'])<img src="{{ $member['img'] }}" alt="">@endif</span>
 					<span class="name">{{ $member['name'] }}</span>
 					<span class="position">{{ $member['position'] }}</span>
 					<span class="affiliation">{{ $member['affiliation'] }}</span>
@@ -129,7 +159,9 @@ $committeeGroups = [
 			</li>
 			@endforeach
 		</ul>
+		@endif
 
+		@if($committeeGroups['group2'] !== [])
 		<ul class="flex group-secondary">
 			@foreach($committeeGroups['group2'] as $member)
 			<li>
@@ -140,7 +172,7 @@ $committeeGroups = [
 					data-affiliation="{{ $member['affiliation'] }}"
 					data-bio="{{ $member['bio'] }}"
 					data-link="{{ $member['link'] ?? '' }}">
-					<span class="imgfit" aria-hidden="true"><img src="{{ $member['img'] }}" alt=""></span>
+					<span class="imgfit" aria-hidden="true">@if($member['img'])<img src="{{ $member['img'] }}" alt="">@endif</span>
 					<span class="name">{{ $member['name'] }}</span>
 					<span class="position">{{ $member['position'] }}</span>
 					<span class="affiliation">{{ $member['affiliation'] }}</span>
@@ -148,6 +180,7 @@ $committeeGroups = [
 			</li>
 			@endforeach
 		</ul>
+		@endif
 	</section>
 </div>
 
